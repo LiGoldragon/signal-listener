@@ -6,9 +6,11 @@ use signal_frame::{
     SubReply,
 };
 use signal_listener::{
-    CaptureSession, CaptureStarted, CaptureStopped, DeliveredTo, Frame, FrameBody, Input,
-    OperationKind, Output, Reason, RequestUnimplemented, StartCapture, StartedSession, StopCapture,
-    StoppedSession, TranscriptText, UnimplementedOperationKind, UnimplementedReason,
+    ActiveCapture, ActiveCaptureSession, AudioArtifactPath, CaptureSession, CaptureStarted,
+    CaptureStatus, CaptureStopped, DeliveredTo, DeliveryOutcome, DeliveryOutcomes,
+    DurableAudioArtifact, Frame, FrameBody, Input, OperationKind, Output, OutputTarget, Reason,
+    RequestUnimplemented, StartCapture, StartedSession, StatusRequest, StopCapture, StoppedSession,
+    TranscriptText, UnimplementedOperationKind, UnimplementedReason, WirePath,
 };
 
 struct ListenerFixture;
@@ -68,10 +70,16 @@ impl ListenerFixture {
         let recovered = NotaSource::new(&text).parse::<Value>().expect("decode");
         assert_eq!(&recovered, value);
     }
+
+    fn audio_artifact() -> DurableAudioArtifact {
+        DurableAudioArtifact::new(AudioArtifactPath::new(WirePath::new(
+            "/var/lib/persona/listener/captures/7.wav",
+        )))
+    }
 }
 
 #[test]
-fn start_and_stop_requests_round_trip() {
+fn start_stop_and_status_requests_round_trip() {
     let start = Input::Start(StartCapture {});
     assert_eq!(start.operation_kind(), OperationKind::Start);
     ListenerFixture::assert_request_round_trips(start.clone());
@@ -81,6 +89,11 @@ fn start_and_stop_requests_round_trip() {
     assert_eq!(stop.operation_kind(), OperationKind::Stop);
     ListenerFixture::assert_request_round_trips(stop.clone());
     ListenerFixture::assert_nota_round_trips(&stop);
+
+    let status = Input::Status(StatusRequest {});
+    assert_eq!(status.operation_kind(), OperationKind::Status);
+    ListenerFixture::assert_request_round_trips(status.clone());
+    ListenerFixture::assert_nota_round_trips(&status);
 }
 
 #[test]
@@ -91,9 +104,16 @@ fn reply_variants_round_trip() {
         ))),
         Output::Stopped(CaptureStopped {
             stopped_session: StoppedSession::new(CaptureSession::new(7)),
+            durable_audio_artifact: ListenerFixture::audio_artifact(),
             transcript_text: TranscriptText::new("hello".to_owned()),
-            delivered_to: DeliveredTo::new(signal_listener::OutputTarget::SystemClipboard),
+            delivery_outcomes: DeliveryOutcomes::new(vec![DeliveryOutcome::Delivered(
+                DeliveredTo::new(OutputTarget::SystemClipboard),
+            )]),
         }),
+        Output::status_reported(CaptureStatus::Capturing(ActiveCapture {
+            active_capture_session: ActiveCaptureSession::new(CaptureSession::new(7)),
+            durable_audio_artifact: ListenerFixture::audio_artifact(),
+        })),
         Output::RequestUnimplemented(RequestUnimplemented {
             unimplemented_operation_kind: UnimplementedOperationKind::new(OperationKind::Stop),
             reason: Reason::new(UnimplementedReason::NotBuiltYet),
@@ -110,4 +130,13 @@ fn reply_variants_round_trip() {
 fn capture_session_projects_to_integer() {
     let session = CaptureSession::new(42);
     assert_eq!(session.value(), 42);
+}
+
+#[test]
+fn audio_artifact_path_projects_to_string() {
+    let artifact = ListenerFixture::audio_artifact();
+    assert_eq!(
+        artifact.path().as_str(),
+        "/var/lib/persona/listener/captures/7.wav"
+    );
 }

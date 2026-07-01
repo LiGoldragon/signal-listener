@@ -33,11 +33,42 @@ impl TranscriptText {
     }
 }
 
+impl AudioArtifactPath {
+    pub fn as_str(&self) -> &str {
+        self.payload().as_str()
+    }
+}
+
+impl DurableAudioArtifact {
+    pub fn path(&self) -> &AudioArtifactPath {
+        self.payload()
+    }
+}
+
+impl OutputTargets {
+    pub fn as_slice(&self) -> &[OutputTarget] {
+        self.payload().as_slice()
+    }
+}
+
+impl DeliveryOutcomes {
+    pub fn as_slice(&self) -> &[DeliveryOutcome] {
+        self.payload().as_slice()
+    }
+}
+
+impl CaptureStatusReport {
+    pub fn status(&self) -> &CaptureStatus {
+        self.payload()
+    }
+}
+
 impl Input {
     pub fn operation_kind(&self) -> OperationKind {
         match self {
             Self::Start(_) => OperationKind::Start,
             Self::Stop(_) => OperationKind::Stop,
+            Self::Status(_) => OperationKind::Status,
         }
     }
 }

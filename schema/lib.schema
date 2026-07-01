@@ -5,9 +5,11 @@
 ;; delivery, sockets, and state live in the listener daemon.
 
 [(Start StartCapture)
- (Stop StopCapture)]
+ (Stop StopCapture)
+ (Status StatusRequest)]
 [(Started CaptureStarted)
  (Stopped CaptureStopped)
+ (StatusReported CaptureStatusReport)
  (RequestUnimplemented RequestUnimplemented)]
 {
   CaptureSession Integer
@@ -17,6 +19,7 @@
   InputSource [SystemDefault]
   TranscriptionMode [BatchOnStop]
   OutputTarget [SystemClipboard]
+  OutputTargets (Vector OutputTarget)
 
   WorkingSocketPath WirePath
   WorkingSocketMode SocketMode
@@ -31,30 +34,50 @@
     CaptureStoreDirectory
     InputSource
     TranscriptionMode
-    OutputTarget
+    OutputTargets
   }
 
   StartCapture { }
   StopCapture CaptureSession
+  StatusRequest { }
 
   StartedSession CaptureSession
   CaptureStarted StartedSession
 
+  AudioArtifactPath WirePath
+  DurableAudioArtifact AudioArtifactPath
+
+  ActiveCaptureSession CaptureSession
+  ActiveCapture {
+    ActiveCaptureSession
+    DurableAudioArtifact
+  }
+  CaptureStatus [Idle (Capturing ActiveCapture)]
+  CaptureStatusReport CaptureStatus
+
   StoppedSession CaptureSession
   TranscriptText String
   DeliveredTo OutputTarget
+  DeliveryFailureReason [TargetUnavailable TargetRejected]
+  DeliveryFailure {
+    target.OutputTarget
+    reason.DeliveryFailureReason
+  }
+  DeliveryOutcome [(Delivered DeliveredTo) (Failed DeliveryFailure)]
+  DeliveryOutcomes (Vector DeliveryOutcome)
   CaptureStopped {
     StoppedSession
+    DurableAudioArtifact
     TranscriptText
-    DeliveredTo
+    DeliveryOutcomes
   }
 
-  OperationKind [Start Stop]
+  OperationKind [Start Stop Status]
   UnimplementedReason [
     NotBuiltYet
     AudioBackendUnavailable
     TranscriptionBackendUnavailable
-    ClipboardUnavailable
+    OutputTargetUnavailable
     StoreUnavailable
   ]
   UnimplementedOperationKind OperationKind

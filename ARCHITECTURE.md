@@ -11,13 +11,15 @@ The contract carries the working capture/transcription surface:
 ListenerOperation                 ListenerReply
 Start(StartCapture)               Started(CaptureStarted)
 Stop(StopCapture)                 Stopped(CaptureStopped)
+Status(StatusRequest)             StatusReported(CaptureStatusReport)
                                    RequestUnimplemented(reason)
 ```
 
 `Start` begins a daemon-owned capture session using the configured default input.
 `Stop` closes that session, allowing the daemon to transcribe the durable capture
-and deliver text to the configured output. The first output target in the
-contract is `SystemClipboard`.
+and deliver text to the configured outputs. `Status` reports whether the single
+active capture slot is idle or writing one durable audio artifact. The first
+output target in the contract is `SystemClipboard`.
 
 ## Owned
 

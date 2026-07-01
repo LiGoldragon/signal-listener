@@ -100,6 +100,14 @@ pub enum OutputTarget {
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct OutputTargets(Vec<OutputTarget>);
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct WorkingSocketPath(WirePath);
 
 #[rustfmt::skip]
@@ -148,7 +156,7 @@ pub struct ListenerDaemonConfiguration {
     pub capture_store_directory: CaptureStoreDirectory,
     pub input_source: InputSource,
     pub transcription_mode: TranscriptionMode,
-    pub output_target: OutputTarget,
+    pub output_targets: OutputTargets,
 }
 
 #[rustfmt::skip]
@@ -173,6 +181,14 @@ pub struct StopCapture(CaptureSession);
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct StatusRequest {}
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct StartedSession(CaptureSession);
 
 #[rustfmt::skip]
@@ -182,6 +198,60 @@ pub struct StartedSession(CaptureSession);
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct CaptureStarted(StartedSession);
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct AudioArtifactPath(WirePath);
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct DurableAudioArtifact(AudioArtifactPath);
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct ActiveCaptureSession(CaptureSession);
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct ActiveCapture {
+    pub active_capture_session: ActiveCaptureSession,
+    pub durable_audio_artifact: DurableAudioArtifact,
+}
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub enum CaptureStatus {
+    Idle,
+    Capturing(ActiveCapture),
+}
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct CaptureStatusReport(CaptureStatus);
 
 #[rustfmt::skip]
 #[cfg_attr(
@@ -212,11 +282,62 @@ pub struct DeliveredTo(OutputTarget);
     feature = "nota-text",
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
+#[derive(
+    rkyv::Archive,
+    rkyv::Serialize,
+    rkyv::Deserialize,
+    Clone,
+    Copy,
+    Debug,
+    PartialEq,
+    Eq,
+)]
+pub enum DeliveryFailureReason {
+    TargetUnavailable,
+    TargetRejected,
+}
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct DeliveryFailure {
+    pub target: OutputTarget,
+    pub reason: DeliveryFailureReason,
+}
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub enum DeliveryOutcome {
+    Delivered(DeliveredTo),
+    Failed(DeliveryFailure),
+}
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct DeliveryOutcomes(Vec<DeliveryOutcome>);
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct CaptureStopped {
     pub stopped_session: StoppedSession,
+    pub durable_audio_artifact: DurableAudioArtifact,
     pub transcript_text: TranscriptText,
-    pub delivered_to: DeliveredTo,
+    pub delivery_outcomes: DeliveryOutcomes,
 }
 
 #[rustfmt::skip]
@@ -237,6 +358,7 @@ pub struct CaptureStopped {
 pub enum OperationKind {
     Start,
     Stop,
+    Status,
 }
 
 #[rustfmt::skip]
@@ -258,7 +380,7 @@ pub enum UnimplementedReason {
     NotBuiltYet,
     AudioBackendUnavailable,
     TranscriptionBackendUnavailable,
-    ClipboardUnavailable,
+    OutputTargetUnavailable,
     StoreUnavailable,
 }
 
@@ -298,6 +420,7 @@ pub struct RequestUnimplemented {
 pub enum Input {
     Start(StartCapture),
     Stop(StopCapture),
+    Status(StatusRequest),
 }
 
 #[rustfmt::skip]
@@ -309,6 +432,7 @@ pub enum Input {
 pub enum Output {
     Started(CaptureStarted),
     Stopped(CaptureStopped),
+    StatusReported(CaptureStatusReport),
     RequestUnimplemented(RequestUnimplemented),
 }
 
@@ -365,6 +489,25 @@ impl SocketMode {
 #[rustfmt::skip]
 impl From<Integer> for SocketMode {
     fn from(payload: Integer) -> Self {
+        Self::new(payload)
+    }
+}
+
+#[rustfmt::skip]
+impl OutputTargets {
+    pub fn new(payload: Vec<OutputTarget>) -> Self {
+        Self(payload)
+    }
+    pub fn payload(&self) -> &Vec<OutputTarget> {
+        &self.0
+    }
+    pub fn into_payload(self) -> Vec<OutputTarget> {
+        self.0
+    }
+}
+#[rustfmt::skip]
+impl From<Vec<OutputTarget>> for OutputTargets {
+    fn from(payload: Vec<OutputTarget>) -> Self {
         Self::new(payload)
     }
 }
@@ -522,6 +665,82 @@ impl From<StartedSession> for CaptureStarted {
 }
 
 #[rustfmt::skip]
+impl AudioArtifactPath {
+    pub fn new(payload: WirePath) -> Self {
+        Self(payload)
+    }
+    pub fn payload(&self) -> &WirePath {
+        &self.0
+    }
+    pub fn into_payload(self) -> WirePath {
+        self.0
+    }
+}
+#[rustfmt::skip]
+impl From<WirePath> for AudioArtifactPath {
+    fn from(payload: WirePath) -> Self {
+        Self::new(payload)
+    }
+}
+
+#[rustfmt::skip]
+impl DurableAudioArtifact {
+    pub fn new(payload: AudioArtifactPath) -> Self {
+        Self(payload)
+    }
+    pub fn payload(&self) -> &AudioArtifactPath {
+        &self.0
+    }
+    pub fn into_payload(self) -> AudioArtifactPath {
+        self.0
+    }
+}
+#[rustfmt::skip]
+impl From<AudioArtifactPath> for DurableAudioArtifact {
+    fn from(payload: AudioArtifactPath) -> Self {
+        Self::new(payload)
+    }
+}
+
+#[rustfmt::skip]
+impl ActiveCaptureSession {
+    pub fn new(payload: CaptureSession) -> Self {
+        Self(payload)
+    }
+    pub fn payload(&self) -> &CaptureSession {
+        &self.0
+    }
+    pub fn into_payload(self) -> CaptureSession {
+        self.0
+    }
+}
+#[rustfmt::skip]
+impl From<CaptureSession> for ActiveCaptureSession {
+    fn from(payload: CaptureSession) -> Self {
+        Self::new(payload)
+    }
+}
+
+#[rustfmt::skip]
+impl CaptureStatusReport {
+    pub fn new(payload: CaptureStatus) -> Self {
+        Self(payload)
+    }
+    pub fn payload(&self) -> &CaptureStatus {
+        &self.0
+    }
+    pub fn into_payload(self) -> CaptureStatus {
+        self.0
+    }
+}
+#[rustfmt::skip]
+impl From<CaptureStatus> for CaptureStatusReport {
+    fn from(payload: CaptureStatus) -> Self {
+        Self::new(payload)
+    }
+}
+
+#[rustfmt::skip]
 impl StoppedSession {
     pub fn new(payload: CaptureSession) -> Self {
         Self(payload)
@@ -579,6 +798,25 @@ impl From<OutputTarget> for DeliveredTo {
 }
 
 #[rustfmt::skip]
+impl DeliveryOutcomes {
+    pub fn new(payload: Vec<DeliveryOutcome>) -> Self {
+        Self(payload)
+    }
+    pub fn payload(&self) -> &Vec<DeliveryOutcome> {
+        &self.0
+    }
+    pub fn into_payload(self) -> Vec<DeliveryOutcome> {
+        self.0
+    }
+}
+#[rustfmt::skip]
+impl From<Vec<DeliveryOutcome>> for DeliveryOutcomes {
+    fn from(payload: Vec<DeliveryOutcome>) -> Self {
+        Self::new(payload)
+    }
+}
+
+#[rustfmt::skip]
 impl UnimplementedOperationKind {
     pub fn new(payload: OperationKind) -> Self {
         Self(payload)
@@ -617,12 +855,32 @@ impl From<UnimplementedReason> for Reason {
 }
 
 #[rustfmt::skip]
+impl CaptureStatus {
+    pub fn capturing(payload: ActiveCapture) -> Self {
+        Self::Capturing(payload)
+    }
+}
+
+#[rustfmt::skip]
+impl DeliveryOutcome {
+    pub fn delivered(payload: OutputTarget) -> Self {
+        Self::Delivered(DeliveredTo::new(payload))
+    }
+    pub fn failed(payload: DeliveryFailure) -> Self {
+        Self::Failed(payload)
+    }
+}
+
+#[rustfmt::skip]
 impl Input {
     pub fn start(payload: StartCapture) -> Self {
         Self::Start(payload)
     }
     pub fn stop(payload: CaptureSession) -> Self {
         Self::Stop(StopCapture::new(payload))
+    }
+    pub fn status(payload: StatusRequest) -> Self {
+        Self::Status(payload)
     }
 }
 
@@ -634,8 +892,32 @@ impl Output {
     pub fn stopped(payload: CaptureStopped) -> Self {
         Self::Stopped(payload)
     }
+    pub fn status_reported(payload: CaptureStatus) -> Self {
+        Self::StatusReported(CaptureStatusReport::new(payload))
+    }
     pub fn request_unimplemented(payload: RequestUnimplemented) -> Self {
         Self::RequestUnimplemented(payload)
+    }
+}
+
+#[rustfmt::skip]
+impl From<ActiveCapture> for CaptureStatus {
+    fn from(payload: ActiveCapture) -> Self {
+        Self::Capturing(payload)
+    }
+}
+
+#[rustfmt::skip]
+impl From<DeliveredTo> for DeliveryOutcome {
+    fn from(payload: DeliveredTo) -> Self {
+        Self::Delivered(payload)
+    }
+}
+
+#[rustfmt::skip]
+impl From<DeliveryFailure> for DeliveryOutcome {
+    fn from(payload: DeliveryFailure) -> Self {
+        Self::Failed(payload)
     }
 }
 
@@ -654,6 +936,13 @@ impl From<StopCapture> for Input {
 }
 
 #[rustfmt::skip]
+impl From<StatusRequest> for Input {
+    fn from(payload: StatusRequest) -> Self {
+        Self::Status(payload)
+    }
+}
+
+#[rustfmt::skip]
 impl From<CaptureStarted> for Output {
     fn from(payload: CaptureStarted) -> Self {
         Self::Started(payload)
@@ -664,6 +953,13 @@ impl From<CaptureStarted> for Output {
 impl From<CaptureStopped> for Output {
     fn from(payload: CaptureStopped) -> Self {
         Self::Stopped(payload)
+    }
+}
+
+#[rustfmt::skip]
+impl From<CaptureStatusReport> for Output {
+    fn from(payload: CaptureStatusReport) -> Self {
+        Self::StatusReported(payload)
     }
 }
 
@@ -710,9 +1006,11 @@ impl std::fmt::Display for Output {
 pub mod short_header {
     pub const INPUT_START: u64 = 0x0000000000000000;
     pub const INPUT_STOP: u64 = 0x0001000000000000;
+    pub const INPUT_STATUS: u64 = 0x0002000000000000;
     pub const OUTPUT_STARTED: u64 = 0x0100000000000000;
     pub const OUTPUT_STOPPED: u64 = 0x0101000000000000;
-    pub const OUTPUT_REQUEST_UNIMPLEMENTED: u64 = 0x0102000000000000;
+    pub const OUTPUT_STATUS_REPORTED: u64 = 0x0102000000000000;
+    pub const OUTPUT_REQUEST_UNIMPLEMENTED: u64 = 0x0103000000000000;
 }
 
 #[rustfmt::skip]
@@ -768,6 +1066,7 @@ impl std::error::Error for SignalFrameError {}
 pub enum InputRoute {
     Start,
     Stop,
+    Status,
 }
 
 #[rustfmt::skip]
@@ -788,6 +1087,7 @@ pub enum InputRoute {
 pub enum OutputRoute {
     Started,
     Stopped,
+    StatusReported,
     RequestUnimplemented,
 }
 
@@ -797,18 +1097,21 @@ impl Input {
         match self {
             Self::Start(_) => InputRoute::Start,
             Self::Stop(_) => InputRoute::Stop,
+            Self::Status(_) => InputRoute::Status,
         }
     }
     pub fn short_header(&self) -> u64 {
         match self {
             Self::Start(_) => short_header::INPUT_START,
             Self::Stop(_) => short_header::INPUT_STOP,
+            Self::Status(_) => short_header::INPUT_STATUS,
         }
     }
     pub fn route_from_short_header(header: u64) -> Result<InputRoute, SignalFrameError> {
         match header {
             short_header::INPUT_START => Ok(InputRoute::Start),
             short_header::INPUT_STOP => Ok(InputRoute::Stop),
+            short_header::INPUT_STATUS => Ok(InputRoute::Status),
             _ => {
                 Err(SignalFrameError::UnknownHeader {
                     root_enum: "Input",
@@ -861,6 +1164,7 @@ impl Output {
         match self {
             Self::Started(_) => OutputRoute::Started,
             Self::Stopped(_) => OutputRoute::Stopped,
+            Self::StatusReported(_) => OutputRoute::StatusReported,
             Self::RequestUnimplemented(_) => OutputRoute::RequestUnimplemented,
         }
     }
@@ -868,6 +1172,7 @@ impl Output {
         match self {
             Self::Started(_) => short_header::OUTPUT_STARTED,
             Self::Stopped(_) => short_header::OUTPUT_STOPPED,
+            Self::StatusReported(_) => short_header::OUTPUT_STATUS_REPORTED,
             Self::RequestUnimplemented(_) => short_header::OUTPUT_REQUEST_UNIMPLEMENTED,
         }
     }
@@ -877,6 +1182,7 @@ impl Output {
         match header {
             short_header::OUTPUT_STARTED => Ok(OutputRoute::Started),
             short_header::OUTPUT_STOPPED => Ok(OutputRoute::Stopped),
+            short_header::OUTPUT_STATUS_REPORTED => Ok(OutputRoute::StatusReported),
             short_header::OUTPUT_REQUEST_UNIMPLEMENTED => {
                 Ok(OutputRoute::RequestUnimplemented)
             }
@@ -930,7 +1236,7 @@ impl Output {
 impl signal_frame::RequestPayload for Input {}
 #[rustfmt::skip]
 impl signal_frame::SignalOperationHeads for Input {
-    const HEADS: &'static [&'static str] = &["Start", "Stop"];
+    const HEADS: &'static [&'static str] = &["Start", "Stop", "Status"];
 }
 #[rustfmt::skip]
 impl signal_frame::LogVariant for Input {
