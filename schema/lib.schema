@@ -10,6 +10,9 @@
 [(Started CaptureStarted)
  (Stopped CaptureStopped)
  (StatusReported CaptureStatusReport)
+ (CaptureAlreadyActive CaptureAlreadyActive)
+ (NoActiveCapture NoActiveCapture)
+ (CaptureSessionMismatch CaptureSessionMismatch)
  (RequestUnimplemented RequestUnimplemented)]
 {
   CaptureSession Integer
@@ -54,6 +57,14 @@
   }
   CaptureStatus [Idle (Capturing ActiveCapture)]
   CaptureStatusReport CaptureStatus
+
+  CaptureAlreadyActive ActiveCaptureSession
+  NoActiveCapture { }
+  RequestedCaptureSession CaptureSession
+  CaptureSessionMismatch {
+    ActiveCaptureSession
+    RequestedCaptureSession
+  }
 
   StoppedSession CaptureSession
   TranscriptText String

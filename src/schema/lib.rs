@@ -259,6 +259,41 @@ pub struct CaptureStatusReport(CaptureStatus);
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct CaptureAlreadyActive(ActiveCaptureSession);
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct NoActiveCapture {}
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct RequestedCaptureSession(CaptureSession);
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct CaptureSessionMismatch {
+    pub active_capture_session: ActiveCaptureSession,
+    pub requested_capture_session: RequestedCaptureSession,
+}
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct StoppedSession(CaptureSession);
 
 #[rustfmt::skip]
@@ -433,6 +468,9 @@ pub enum Output {
     Started(CaptureStarted),
     Stopped(CaptureStopped),
     StatusReported(CaptureStatusReport),
+    CaptureAlreadyActive(CaptureAlreadyActive),
+    NoActiveCapture(NoActiveCapture),
+    CaptureSessionMismatch(CaptureSessionMismatch),
     RequestUnimplemented(RequestUnimplemented),
 }
 
@@ -741,6 +779,44 @@ impl From<CaptureStatus> for CaptureStatusReport {
 }
 
 #[rustfmt::skip]
+impl CaptureAlreadyActive {
+    pub fn new(payload: ActiveCaptureSession) -> Self {
+        Self(payload)
+    }
+    pub fn payload(&self) -> &ActiveCaptureSession {
+        &self.0
+    }
+    pub fn into_payload(self) -> ActiveCaptureSession {
+        self.0
+    }
+}
+#[rustfmt::skip]
+impl From<ActiveCaptureSession> for CaptureAlreadyActive {
+    fn from(payload: ActiveCaptureSession) -> Self {
+        Self::new(payload)
+    }
+}
+
+#[rustfmt::skip]
+impl RequestedCaptureSession {
+    pub fn new(payload: CaptureSession) -> Self {
+        Self(payload)
+    }
+    pub fn payload(&self) -> &CaptureSession {
+        &self.0
+    }
+    pub fn into_payload(self) -> CaptureSession {
+        self.0
+    }
+}
+#[rustfmt::skip]
+impl From<CaptureSession> for RequestedCaptureSession {
+    fn from(payload: CaptureSession) -> Self {
+        Self::new(payload)
+    }
+}
+
+#[rustfmt::skip]
 impl StoppedSession {
     pub fn new(payload: CaptureSession) -> Self {
         Self(payload)
@@ -895,6 +971,15 @@ impl Output {
     pub fn status_reported(payload: CaptureStatus) -> Self {
         Self::StatusReported(CaptureStatusReport::new(payload))
     }
+    pub fn capture_already_active(payload: ActiveCaptureSession) -> Self {
+        Self::CaptureAlreadyActive(CaptureAlreadyActive::new(payload))
+    }
+    pub fn no_active_capture(payload: NoActiveCapture) -> Self {
+        Self::NoActiveCapture(payload)
+    }
+    pub fn capture_session_mismatch(payload: CaptureSessionMismatch) -> Self {
+        Self::CaptureSessionMismatch(payload)
+    }
     pub fn request_unimplemented(payload: RequestUnimplemented) -> Self {
         Self::RequestUnimplemented(payload)
     }
@@ -964,6 +1049,27 @@ impl From<CaptureStatusReport> for Output {
 }
 
 #[rustfmt::skip]
+impl From<CaptureAlreadyActive> for Output {
+    fn from(payload: CaptureAlreadyActive) -> Self {
+        Self::CaptureAlreadyActive(payload)
+    }
+}
+
+#[rustfmt::skip]
+impl From<NoActiveCapture> for Output {
+    fn from(payload: NoActiveCapture) -> Self {
+        Self::NoActiveCapture(payload)
+    }
+}
+
+#[rustfmt::skip]
+impl From<CaptureSessionMismatch> for Output {
+    fn from(payload: CaptureSessionMismatch) -> Self {
+        Self::CaptureSessionMismatch(payload)
+    }
+}
+
+#[rustfmt::skip]
 impl From<RequestUnimplemented> for Output {
     fn from(payload: RequestUnimplemented) -> Self {
         Self::RequestUnimplemented(payload)
@@ -1010,7 +1116,10 @@ pub mod short_header {
     pub const OUTPUT_STARTED: u64 = 0x0100000000000000;
     pub const OUTPUT_STOPPED: u64 = 0x0101000000000000;
     pub const OUTPUT_STATUS_REPORTED: u64 = 0x0102000000000000;
-    pub const OUTPUT_REQUEST_UNIMPLEMENTED: u64 = 0x0103000000000000;
+    pub const OUTPUT_CAPTURE_ALREADY_ACTIVE: u64 = 0x0103000000000000;
+    pub const OUTPUT_NO_ACTIVE_CAPTURE: u64 = 0x0104000000000000;
+    pub const OUTPUT_CAPTURE_SESSION_MISMATCH: u64 = 0x0105000000000000;
+    pub const OUTPUT_REQUEST_UNIMPLEMENTED: u64 = 0x0106000000000000;
 }
 
 #[rustfmt::skip]
@@ -1088,6 +1197,9 @@ pub enum OutputRoute {
     Started,
     Stopped,
     StatusReported,
+    CaptureAlreadyActive,
+    NoActiveCapture,
+    CaptureSessionMismatch,
     RequestUnimplemented,
 }
 
@@ -1165,6 +1277,9 @@ impl Output {
             Self::Started(_) => OutputRoute::Started,
             Self::Stopped(_) => OutputRoute::Stopped,
             Self::StatusReported(_) => OutputRoute::StatusReported,
+            Self::CaptureAlreadyActive(_) => OutputRoute::CaptureAlreadyActive,
+            Self::NoActiveCapture(_) => OutputRoute::NoActiveCapture,
+            Self::CaptureSessionMismatch(_) => OutputRoute::CaptureSessionMismatch,
             Self::RequestUnimplemented(_) => OutputRoute::RequestUnimplemented,
         }
     }
@@ -1173,6 +1288,11 @@ impl Output {
             Self::Started(_) => short_header::OUTPUT_STARTED,
             Self::Stopped(_) => short_header::OUTPUT_STOPPED,
             Self::StatusReported(_) => short_header::OUTPUT_STATUS_REPORTED,
+            Self::CaptureAlreadyActive(_) => short_header::OUTPUT_CAPTURE_ALREADY_ACTIVE,
+            Self::NoActiveCapture(_) => short_header::OUTPUT_NO_ACTIVE_CAPTURE,
+            Self::CaptureSessionMismatch(_) => {
+                short_header::OUTPUT_CAPTURE_SESSION_MISMATCH
+            }
             Self::RequestUnimplemented(_) => short_header::OUTPUT_REQUEST_UNIMPLEMENTED,
         }
     }
@@ -1183,6 +1303,13 @@ impl Output {
             short_header::OUTPUT_STARTED => Ok(OutputRoute::Started),
             short_header::OUTPUT_STOPPED => Ok(OutputRoute::Stopped),
             short_header::OUTPUT_STATUS_REPORTED => Ok(OutputRoute::StatusReported),
+            short_header::OUTPUT_CAPTURE_ALREADY_ACTIVE => {
+                Ok(OutputRoute::CaptureAlreadyActive)
+            }
+            short_header::OUTPUT_NO_ACTIVE_CAPTURE => Ok(OutputRoute::NoActiveCapture),
+            short_header::OUTPUT_CAPTURE_SESSION_MISMATCH => {
+                Ok(OutputRoute::CaptureSessionMismatch)
+            }
             short_header::OUTPUT_REQUEST_UNIMPLEMENTED => {
                 Ok(OutputRoute::RequestUnimplemented)
             }

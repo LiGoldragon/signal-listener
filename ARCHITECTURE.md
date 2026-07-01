@@ -12,6 +12,9 @@ ListenerOperation                 ListenerReply
 Start(StartCapture)               Started(CaptureStarted)
 Stop(StopCapture)                 Stopped(CaptureStopped)
 Status(StatusRequest)             StatusReported(CaptureStatusReport)
+                                   CaptureAlreadyActive(active session)
+                                   NoActiveCapture
+                                   CaptureSessionMismatch(active, requested)
                                    RequestUnimplemented(reason)
 ```
 

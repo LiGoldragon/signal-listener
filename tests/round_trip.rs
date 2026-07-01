@@ -6,11 +6,12 @@ use signal_frame::{
     SubReply,
 };
 use signal_listener::{
-    ActiveCapture, ActiveCaptureSession, AudioArtifactPath, CaptureSession, CaptureStarted,
-    CaptureStatus, CaptureStopped, DeliveredTo, DeliveryOutcome, DeliveryOutcomes,
-    DurableAudioArtifact, Frame, FrameBody, Input, OperationKind, Output, OutputTarget, Reason,
-    RequestUnimplemented, StartCapture, StartedSession, StatusRequest, StopCapture, StoppedSession,
-    TranscriptText, UnimplementedOperationKind, UnimplementedReason, WirePath,
+    ActiveCapture, ActiveCaptureSession, AudioArtifactPath, CaptureAlreadyActive, CaptureSession,
+    CaptureSessionMismatch, CaptureStarted, CaptureStatus, CaptureStopped, DeliveredTo,
+    DeliveryOutcome, DeliveryOutcomes, DurableAudioArtifact, Frame, FrameBody, Input,
+    NoActiveCapture, OperationKind, Output, OutputTarget, Reason, RequestUnimplemented,
+    RequestedCaptureSession, StartCapture, StartedSession, StatusRequest, StopCapture,
+    StoppedSession, TranscriptText, UnimplementedOperationKind, UnimplementedReason, WirePath,
 };
 
 struct ListenerFixture;
@@ -114,6 +115,14 @@ fn reply_variants_round_trip() {
             active_capture_session: ActiveCaptureSession::new(CaptureSession::new(7)),
             durable_audio_artifact: ListenerFixture::audio_artifact(),
         })),
+        Output::CaptureAlreadyActive(CaptureAlreadyActive::new(ActiveCaptureSession::new(
+            CaptureSession::new(7),
+        ))),
+        Output::NoActiveCapture(NoActiveCapture {}),
+        Output::CaptureSessionMismatch(CaptureSessionMismatch {
+            active_capture_session: ActiveCaptureSession::new(CaptureSession::new(7)),
+            requested_capture_session: RequestedCaptureSession::new(CaptureSession::new(8)),
+        }),
         Output::RequestUnimplemented(RequestUnimplemented {
             unimplemented_operation_kind: UnimplementedOperationKind::new(OperationKind::Stop),
             reason: Reason::new(UnimplementedReason::NotBuiltYet),
