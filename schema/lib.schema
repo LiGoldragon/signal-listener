@@ -1,0 +1,66 @@
+;; signal-listener — ordinary working wire contract for Listener.
+;;
+;; Wire-only: this contract owns the public capture/transcription control
+;; vocabulary. Runtime capture, disk writes, transcription execution, clipboard
+;; delivery, sockets, and state live in the listener daemon.
+
+[(Start StartCapture)
+ (Stop StopCapture)]
+[(Started CaptureStarted)
+ (Stopped CaptureStopped)
+ (RequestUnimplemented RequestUnimplemented)]
+{
+  CaptureSession Integer
+  WirePath String
+  SocketMode Integer
+
+  InputSource [SystemDefault]
+  TranscriptionMode [BatchOnStop]
+  OutputTarget [SystemClipboard]
+
+  WorkingSocketPath WirePath
+  WorkingSocketMode SocketMode
+  MetaSocketPath WirePath
+  MetaSocketMode SocketMode
+  CaptureStoreDirectory WirePath
+  ListenerDaemonConfiguration {
+    WorkingSocketPath
+    WorkingSocketMode
+    MetaSocketPath
+    MetaSocketMode
+    CaptureStoreDirectory
+    InputSource
+    TranscriptionMode
+    OutputTarget
+  }
+
+  StartCapture { }
+  StopCapture CaptureSession
+
+  StartedSession CaptureSession
+  CaptureStarted StartedSession
+
+  StoppedSession CaptureSession
+  TranscriptText String
+  DeliveredTo OutputTarget
+  CaptureStopped {
+    StoppedSession
+    TranscriptText
+    DeliveredTo
+  }
+
+  OperationKind [Start Stop]
+  UnimplementedReason [
+    NotBuiltYet
+    AudioBackendUnavailable
+    TranscriptionBackendUnavailable
+    ClipboardUnavailable
+    StoreUnavailable
+  ]
+  UnimplementedOperationKind OperationKind
+  Reason UnimplementedReason
+  RequestUnimplemented {
+    UnimplementedOperationKind
+    Reason
+  }
+}
