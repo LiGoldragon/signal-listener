@@ -6,9 +6,11 @@
 
 [(Start StartCapture)
  (Stop StopCapture)
+ (Cancel CancelCapture)
  (Status StatusRequest)]
 [(Started CaptureStarted)
  (Stopped CaptureStopped)
+ (Cancelled CaptureCancelled)
  (StatusReported CaptureStatusReport)
  (CaptureAlreadyActive CaptureAlreadyActive)
  (NoActiveCapture NoActiveCapture)
@@ -42,6 +44,7 @@
 
   StartCapture { }
   StopCapture CaptureSession
+  CancelCapture CaptureSession
   StatusRequest { }
 
   StartedSession CaptureSession
@@ -83,7 +86,13 @@
     DeliveryOutcomes
   }
 
-  OperationKind [Start Stop Status]
+  CancelledSession CaptureSession
+  CaptureCancelled {
+    CancelledSession
+    DurableAudioArtifact
+  }
+
+  OperationKind [Start Stop Cancel Status]
   UnimplementedReason [
     NotBuiltYet
     AudioBackendUnavailable

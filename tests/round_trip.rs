@@ -6,12 +6,13 @@ use signal_frame::{
     SubReply,
 };
 use signal_listener::{
-    ActiveCapture, ActiveCaptureSession, AudioArtifactPath, CaptureAlreadyActive, CaptureSession,
-    CaptureSessionMismatch, CaptureStarted, CaptureStatus, CaptureStopped, DeliveredTo,
-    DeliveryOutcome, DeliveryOutcomes, DurableAudioArtifact, Frame, FrameBody, Input,
-    NoActiveCapture, OperationKind, Output, OutputTarget, Reason, RequestUnimplemented,
-    RequestedCaptureSession, StartCapture, StartedSession, StatusRequest, StopCapture,
-    StoppedSession, TranscriptText, UnimplementedOperationKind, UnimplementedReason, WirePath,
+    ActiveCapture, ActiveCaptureSession, AudioArtifactPath, CancelledSession, CaptureAlreadyActive,
+    CaptureCancelled, CaptureSession, CaptureSessionMismatch, CaptureStarted, CaptureStatus,
+    CaptureStopped, DeliveredTo, DeliveryOutcome, DeliveryOutcomes, DurableAudioArtifact, Frame,
+    FrameBody, Input, NoActiveCapture, OperationKind, Output, OutputTarget, Reason,
+    RequestUnimplemented, RequestedCaptureSession, StartCapture, StartedSession, StatusRequest,
+    StopCapture, StoppedSession, TranscriptText, UnimplementedOperationKind, UnimplementedReason,
+    WirePath,
 };
 
 struct ListenerFixture;
@@ -91,6 +92,11 @@ fn start_stop_and_status_requests_round_trip() {
     ListenerFixture::assert_request_round_trips(stop.clone());
     ListenerFixture::assert_nota_round_trips(&stop);
 
+    let cancel = Input::cancel(CaptureSession::new(7));
+    assert_eq!(cancel.operation_kind(), OperationKind::Cancel);
+    ListenerFixture::assert_request_round_trips(cancel.clone());
+    ListenerFixture::assert_nota_round_trips(&cancel);
+
     let status = Input::Status(StatusRequest {});
     assert_eq!(status.operation_kind(), OperationKind::Status);
     ListenerFixture::assert_request_round_trips(status.clone());
@@ -110,6 +116,10 @@ fn reply_variants_round_trip() {
             delivery_outcomes: DeliveryOutcomes::new(vec![DeliveryOutcome::Delivered(
                 DeliveredTo::new(OutputTarget::SystemClipboard),
             )]),
+        }),
+        Output::Cancelled(CaptureCancelled {
+            cancelled_session: CancelledSession::new(CaptureSession::new(7)),
+            durable_audio_artifact: ListenerFixture::audio_artifact(),
         }),
         Output::status_reported(CaptureStatus::Capturing(ActiveCapture {
             active_capture_session: ActiveCaptureSession::new(CaptureSession::new(7)),
