@@ -26,11 +26,11 @@ nota-text = ["dep:nota", "signal-frame/nota-text"]
 [dependencies]
 nota         = { package = "nota", git = "https://github.com/LiGoldragon/nota.git", branch = "main", optional = true }
 rkyv         = { version = "0.8", default-features = false, features = ["std", "bytecheck", "little_endian", "pointer_width_32", "unaligned"] }
-signal-frame = { git = "https://github.com/LiGoldragon/signal-frame.git", branch = "main", default-features = false }
+signal-frame = { git = "https://github.com/LiGoldragon/signal-frame.git", branch = "drop-next", default-features = false }
 thiserror    = "2"
 
 [build-dependencies]
-schema-rust = { git = "https://github.com/LiGoldragon/schema-rust.git", branch = "main" }
+schema-rust = { git = "https://github.com/LiGoldragon/schema-rust.git", branch = "drop-next" }
 
 [lints.rust]
 unsafe_code = "forbid"
