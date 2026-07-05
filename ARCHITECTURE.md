@@ -41,12 +41,12 @@ durable audio artifact. The first output target in the contract is
   behavior, durable write implementation, transcription execution, and clipboard
   mutation live in `listener`.
 - Owner-only configuration and policy traffic lives in `meta-signal-listener`.
-- Schema generation machinery lives in `schema-rust-next`.
+- Schema generation machinery lives in `schema-rust`.
 
 ## Code Map
 
 - `schema/lib.schema` is the authored contract vocabulary.
-- `build.rs` runs the standard `schema-rust-next` contract driver.
+- `build.rs` runs the standard `schema-rust` contract driver.
 - `src/schema/lib.rs` is the generated checked-in artifact.
 - `src/lib.rs` re-exports generated nouns and adds small accessors.
 - `tests/round_trip.rs` proves frame and NOTA round trips.
