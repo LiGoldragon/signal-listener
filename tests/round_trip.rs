@@ -107,8 +107,8 @@ fn start_stop_and_status_requests_round_trip() {
     ListenerFixture::assert_request_round_trips(list.clone());
     ListenerFixture::assert_nota_round_trips(&list);
 
-    let retry = Input::RetryCapture(RetryCapture::new(CaptureSession::new(7)));
-    assert_eq!(retry.operation_kind(), OperationKind::RetryCapture);
+    let retry = Input::Retry(RetryCapture::new(CaptureSession::new(7)));
+    assert_eq!(retry.operation_kind(), OperationKind::Retry);
     ListenerFixture::assert_request_round_trips(retry.clone());
     ListenerFixture::assert_nota_round_trips(&retry);
 }
@@ -135,15 +135,15 @@ fn reply_variants_round_trip() {
             active_capture_session: ActiveCaptureSession::new(CaptureSession::new(7)),
             durable_audio_artifact: ListenerFixture::audio_artifact(),
         })),
-        Output::CaptureAlreadyActive(CaptureAlreadyActive::new(ActiveCaptureSession::new(
+        Output::AlreadyActive(CaptureAlreadyActive::new(ActiveCaptureSession::new(
             CaptureSession::new(7),
         ))),
-        Output::NoActiveCapture(NoActiveCapture {}),
-        Output::CaptureSessionMismatch(CaptureSessionMismatch {
+        Output::NoActive(NoActiveCapture {}),
+        Output::SessionMismatch(CaptureSessionMismatch {
             active_capture_session: ActiveCaptureSession::new(CaptureSession::new(7)),
             requested_capture_session: RequestedCaptureSession::new(CaptureSession::new(8)),
         }),
-        Output::RequestUnimplemented(RequestUnimplemented {
+        Output::Unimplemented(RequestUnimplemented {
             unimplemented_operation_kind: UnimplementedOperationKind::new(OperationKind::Stop),
             reason: Reason::new(UnimplementedReason::NotBuiltYet),
         }),

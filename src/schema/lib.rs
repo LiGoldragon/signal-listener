@@ -330,11 +330,11 @@ pub struct CaptureArtifactDurationMilliseconds(Integer);
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct CaptureSummary {
-    pub session: CaptureSession,
-    pub state: CaptureArtifactStateValue,
-    pub artifact: DurableAudioArtifact,
-    pub bytes: CaptureArtifactBytes,
-    pub duration_milliseconds: CaptureArtifactDurationMilliseconds,
+    pub capture_session: CaptureSession,
+    pub capture_artifact_state_value: CaptureArtifactStateValue,
+    pub durable_audio_artifact: DurableAudioArtifact,
+    pub capture_artifact_bytes: CaptureArtifactBytes,
+    pub capture_artifact_duration_milliseconds: CaptureArtifactDurationMilliseconds,
 }
 
 #[rustfmt::skip]
@@ -368,9 +368,9 @@ pub struct RetriedSession(CaptureSession);
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct CaptureRetried {
-    pub retried: RetriedSession,
-    pub transcript: TranscriptText,
-    pub outcomes: DeliveryOutcomes,
+    pub retried_session: RetriedSession,
+    pub transcript_text: TranscriptText,
+    pub delivery_outcomes: DeliveryOutcomes,
 }
 
 #[rustfmt::skip]
@@ -459,8 +459,8 @@ pub enum DeliveryFailureReason {
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct DeliveryFailure {
-    pub target: OutputTarget,
-    pub reason: DeliveryFailureReason,
+    pub output_target: OutputTarget,
+    pub delivery_failure_reason: DeliveryFailureReason,
 }
 
 #[rustfmt::skip]
@@ -535,7 +535,7 @@ pub enum OperationKind {
     Cancel,
     Status,
     ListCaptures,
-    RetryCapture,
+    Retry,
 }
 
 #[rustfmt::skip]
@@ -600,7 +600,7 @@ pub enum Input {
     Cancel(CancelCapture),
     Status(StatusRequest),
     ListCaptures(ListCapturesRequest),
-    RetryCapture(RetryCapture),
+    Retry(RetryCapture),
 }
 
 #[rustfmt::skip]
@@ -615,11 +615,11 @@ pub enum Output {
     Cancelled(CaptureCancelled),
     StatusReported(CaptureStatusReport),
     CapturesListed(CaptureListReport),
-    CaptureRetried(CaptureRetried),
-    CaptureAlreadyActive(CaptureAlreadyActive),
-    NoActiveCapture(NoActiveCapture),
-    CaptureSessionMismatch(CaptureSessionMismatch),
-    RequestUnimplemented(RequestUnimplemented),
+    Retried(CaptureRetried),
+    AlreadyActive(CaptureAlreadyActive),
+    NoActive(NoActiveCapture),
+    SessionMismatch(CaptureSessionMismatch),
+    Unimplemented(RequestUnimplemented),
 }
 
 #[rustfmt::skip]
@@ -1283,8 +1283,8 @@ impl Input {
     pub fn list_captures(payload: ListCapturesRequest) -> Self {
         Self::ListCaptures(payload)
     }
-    pub fn retry_capture(payload: CaptureSession) -> Self {
-        Self::RetryCapture(RetryCapture::new(payload))
+    pub fn retry(payload: CaptureSession) -> Self {
+        Self::Retry(RetryCapture::new(payload))
     }
 }
 
@@ -1305,20 +1305,20 @@ impl Output {
     pub fn captures_listed(payload: CaptureSummaries) -> Self {
         Self::CapturesListed(CaptureListReport::new(payload))
     }
-    pub fn capture_retried(payload: CaptureRetried) -> Self {
-        Self::CaptureRetried(payload)
+    pub fn retried(payload: CaptureRetried) -> Self {
+        Self::Retried(payload)
     }
-    pub fn capture_already_active(payload: ActiveCaptureSession) -> Self {
-        Self::CaptureAlreadyActive(CaptureAlreadyActive::new(payload))
+    pub fn already_active(payload: ActiveCaptureSession) -> Self {
+        Self::AlreadyActive(CaptureAlreadyActive::new(payload))
     }
-    pub fn no_active_capture(payload: NoActiveCapture) -> Self {
-        Self::NoActiveCapture(payload)
+    pub fn no_active(payload: NoActiveCapture) -> Self {
+        Self::NoActive(payload)
     }
-    pub fn capture_session_mismatch(payload: CaptureSessionMismatch) -> Self {
-        Self::CaptureSessionMismatch(payload)
+    pub fn session_mismatch(payload: CaptureSessionMismatch) -> Self {
+        Self::SessionMismatch(payload)
     }
-    pub fn request_unimplemented(payload: RequestUnimplemented) -> Self {
-        Self::RequestUnimplemented(payload)
+    pub fn unimplemented(payload: RequestUnimplemented) -> Self {
+        Self::Unimplemented(payload)
     }
 }
 
@@ -1381,7 +1381,7 @@ impl From<ListCapturesRequest> for Input {
 #[rustfmt::skip]
 impl From<RetryCapture> for Input {
     fn from(payload: RetryCapture) -> Self {
-        Self::RetryCapture(payload)
+        Self::Retry(payload)
     }
 }
 
@@ -1423,35 +1423,35 @@ impl From<CaptureListReport> for Output {
 #[rustfmt::skip]
 impl From<CaptureRetried> for Output {
     fn from(payload: CaptureRetried) -> Self {
-        Self::CaptureRetried(payload)
+        Self::Retried(payload)
     }
 }
 
 #[rustfmt::skip]
 impl From<CaptureAlreadyActive> for Output {
     fn from(payload: CaptureAlreadyActive) -> Self {
-        Self::CaptureAlreadyActive(payload)
+        Self::AlreadyActive(payload)
     }
 }
 
 #[rustfmt::skip]
 impl From<NoActiveCapture> for Output {
     fn from(payload: NoActiveCapture) -> Self {
-        Self::NoActiveCapture(payload)
+        Self::NoActive(payload)
     }
 }
 
 #[rustfmt::skip]
 impl From<CaptureSessionMismatch> for Output {
     fn from(payload: CaptureSessionMismatch) -> Self {
-        Self::CaptureSessionMismatch(payload)
+        Self::SessionMismatch(payload)
     }
 }
 
 #[rustfmt::skip]
 impl From<RequestUnimplemented> for Output {
     fn from(payload: RequestUnimplemented) -> Self {
-        Self::RequestUnimplemented(payload)
+        Self::Unimplemented(payload)
     }
 }
 
@@ -1494,17 +1494,17 @@ pub mod short_header {
     pub const INPUT_CANCEL: u64 = 0x0002000000000000;
     pub const INPUT_STATUS: u64 = 0x0003000000000000;
     pub const INPUT_LIST_CAPTURES: u64 = 0x0004000000000000;
-    pub const INPUT_RETRY_CAPTURE: u64 = 0x0005000000000000;
+    pub const INPUT_RETRY: u64 = 0x0005000000000000;
     pub const OUTPUT_STARTED: u64 = 0x0100000000000000;
     pub const OUTPUT_STOPPED: u64 = 0x0101000000000000;
     pub const OUTPUT_CANCELLED: u64 = 0x0102000000000000;
     pub const OUTPUT_STATUS_REPORTED: u64 = 0x0103000000000000;
     pub const OUTPUT_CAPTURES_LISTED: u64 = 0x0104000000000000;
-    pub const OUTPUT_CAPTURE_RETRIED: u64 = 0x0105000000000000;
-    pub const OUTPUT_CAPTURE_ALREADY_ACTIVE: u64 = 0x0106000000000000;
-    pub const OUTPUT_NO_ACTIVE_CAPTURE: u64 = 0x0107000000000000;
-    pub const OUTPUT_CAPTURE_SESSION_MISMATCH: u64 = 0x0108000000000000;
-    pub const OUTPUT_REQUEST_UNIMPLEMENTED: u64 = 0x0109000000000000;
+    pub const OUTPUT_RETRIED: u64 = 0x0105000000000000;
+    pub const OUTPUT_ALREADY_ACTIVE: u64 = 0x0106000000000000;
+    pub const OUTPUT_NO_ACTIVE: u64 = 0x0107000000000000;
+    pub const OUTPUT_SESSION_MISMATCH: u64 = 0x0108000000000000;
+    pub const OUTPUT_UNIMPLEMENTED: u64 = 0x0109000000000000;
 }
 
 #[rustfmt::skip]
@@ -1563,7 +1563,7 @@ pub enum InputRoute {
     Cancel,
     Status,
     ListCaptures,
-    RetryCapture,
+    Retry,
 }
 
 #[rustfmt::skip]
@@ -1587,11 +1587,11 @@ pub enum OutputRoute {
     Cancelled,
     StatusReported,
     CapturesListed,
-    CaptureRetried,
-    CaptureAlreadyActive,
-    NoActiveCapture,
-    CaptureSessionMismatch,
-    RequestUnimplemented,
+    Retried,
+    AlreadyActive,
+    NoActive,
+    SessionMismatch,
+    Unimplemented,
 }
 
 #[rustfmt::skip]
@@ -1603,7 +1603,7 @@ impl Input {
             Self::Cancel(_) => InputRoute::Cancel,
             Self::Status(_) => InputRoute::Status,
             Self::ListCaptures(_) => InputRoute::ListCaptures,
-            Self::RetryCapture(_) => InputRoute::RetryCapture,
+            Self::Retry(_) => InputRoute::Retry,
         }
     }
     pub fn short_header(&self) -> u64 {
@@ -1613,7 +1613,7 @@ impl Input {
             Self::Cancel(_) => short_header::INPUT_CANCEL,
             Self::Status(_) => short_header::INPUT_STATUS,
             Self::ListCaptures(_) => short_header::INPUT_LIST_CAPTURES,
-            Self::RetryCapture(_) => short_header::INPUT_RETRY_CAPTURE,
+            Self::Retry(_) => short_header::INPUT_RETRY,
         }
     }
     pub fn route_from_short_header(header: u64) -> Result<InputRoute, SignalFrameError> {
@@ -1623,7 +1623,7 @@ impl Input {
             short_header::INPUT_CANCEL => Ok(InputRoute::Cancel),
             short_header::INPUT_STATUS => Ok(InputRoute::Status),
             short_header::INPUT_LIST_CAPTURES => Ok(InputRoute::ListCaptures),
-            short_header::INPUT_RETRY_CAPTURE => Ok(InputRoute::RetryCapture),
+            short_header::INPUT_RETRY => Ok(InputRoute::Retry),
             _ => {
                 Err(SignalFrameError::UnknownHeader {
                     root_enum: "Input",
@@ -1679,11 +1679,11 @@ impl Output {
             Self::Cancelled(_) => OutputRoute::Cancelled,
             Self::StatusReported(_) => OutputRoute::StatusReported,
             Self::CapturesListed(_) => OutputRoute::CapturesListed,
-            Self::CaptureRetried(_) => OutputRoute::CaptureRetried,
-            Self::CaptureAlreadyActive(_) => OutputRoute::CaptureAlreadyActive,
-            Self::NoActiveCapture(_) => OutputRoute::NoActiveCapture,
-            Self::CaptureSessionMismatch(_) => OutputRoute::CaptureSessionMismatch,
-            Self::RequestUnimplemented(_) => OutputRoute::RequestUnimplemented,
+            Self::Retried(_) => OutputRoute::Retried,
+            Self::AlreadyActive(_) => OutputRoute::AlreadyActive,
+            Self::NoActive(_) => OutputRoute::NoActive,
+            Self::SessionMismatch(_) => OutputRoute::SessionMismatch,
+            Self::Unimplemented(_) => OutputRoute::Unimplemented,
         }
     }
     pub fn short_header(&self) -> u64 {
@@ -1693,13 +1693,11 @@ impl Output {
             Self::Cancelled(_) => short_header::OUTPUT_CANCELLED,
             Self::StatusReported(_) => short_header::OUTPUT_STATUS_REPORTED,
             Self::CapturesListed(_) => short_header::OUTPUT_CAPTURES_LISTED,
-            Self::CaptureRetried(_) => short_header::OUTPUT_CAPTURE_RETRIED,
-            Self::CaptureAlreadyActive(_) => short_header::OUTPUT_CAPTURE_ALREADY_ACTIVE,
-            Self::NoActiveCapture(_) => short_header::OUTPUT_NO_ACTIVE_CAPTURE,
-            Self::CaptureSessionMismatch(_) => {
-                short_header::OUTPUT_CAPTURE_SESSION_MISMATCH
-            }
-            Self::RequestUnimplemented(_) => short_header::OUTPUT_REQUEST_UNIMPLEMENTED,
+            Self::Retried(_) => short_header::OUTPUT_RETRIED,
+            Self::AlreadyActive(_) => short_header::OUTPUT_ALREADY_ACTIVE,
+            Self::NoActive(_) => short_header::OUTPUT_NO_ACTIVE,
+            Self::SessionMismatch(_) => short_header::OUTPUT_SESSION_MISMATCH,
+            Self::Unimplemented(_) => short_header::OUTPUT_UNIMPLEMENTED,
         }
     }
     pub fn route_from_short_header(
@@ -1711,17 +1709,11 @@ impl Output {
             short_header::OUTPUT_CANCELLED => Ok(OutputRoute::Cancelled),
             short_header::OUTPUT_STATUS_REPORTED => Ok(OutputRoute::StatusReported),
             short_header::OUTPUT_CAPTURES_LISTED => Ok(OutputRoute::CapturesListed),
-            short_header::OUTPUT_CAPTURE_RETRIED => Ok(OutputRoute::CaptureRetried),
-            short_header::OUTPUT_CAPTURE_ALREADY_ACTIVE => {
-                Ok(OutputRoute::CaptureAlreadyActive)
-            }
-            short_header::OUTPUT_NO_ACTIVE_CAPTURE => Ok(OutputRoute::NoActiveCapture),
-            short_header::OUTPUT_CAPTURE_SESSION_MISMATCH => {
-                Ok(OutputRoute::CaptureSessionMismatch)
-            }
-            short_header::OUTPUT_REQUEST_UNIMPLEMENTED => {
-                Ok(OutputRoute::RequestUnimplemented)
-            }
+            short_header::OUTPUT_RETRIED => Ok(OutputRoute::Retried),
+            short_header::OUTPUT_ALREADY_ACTIVE => Ok(OutputRoute::AlreadyActive),
+            short_header::OUTPUT_NO_ACTIVE => Ok(OutputRoute::NoActive),
+            short_header::OUTPUT_SESSION_MISMATCH => Ok(OutputRoute::SessionMismatch),
+            short_header::OUTPUT_UNIMPLEMENTED => Ok(OutputRoute::Unimplemented),
             _ => {
                 Err(SignalFrameError::UnknownHeader {
                     root_enum: "Output",
@@ -1778,7 +1770,7 @@ impl signal_frame::SignalOperationHeads for Input {
         "Cancel",
         "Status",
         "ListCaptures",
-        "RetryCapture",
+        "Retry",
     ];
 }
 #[rustfmt::skip]

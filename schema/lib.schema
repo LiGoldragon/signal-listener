@@ -1,136 +1,75 @@
 ;; signal-listener — ordinary working wire contract for Listener.
-;;
-;; Wire-only: this contract owns the public capture/transcription control
-;; vocabulary. Runtime capture, disk writes, transcription execution, clipboard
-;; delivery, sockets, and state live in the listener daemon.
-
-[(Start StartCapture)
- (Stop StopCapture)
- (Cancel CancelCapture)
- (Status StatusRequest)
- (ListCaptures ListCapturesRequest)
- (RetryCapture RetryCapture)]
-[(Started CaptureStarted)
- (Stopped CaptureStopped)
- (Cancelled CaptureCancelled)
- (StatusReported CaptureStatusReport)
- (CapturesListed CaptureListReport)
- (CaptureRetried CaptureRetried)
- (CaptureAlreadyActive CaptureAlreadyActive)
- (NoActiveCapture NoActiveCapture)
- (CaptureSessionMismatch CaptureSessionMismatch)
- (RequestUnimplemented RequestUnimplemented)]
+{}
+[Start.StartCapture Stop.StopCapture Cancel.CancelCapture Status.StatusRequest ListCaptures.ListCapturesRequest Retry.RetryCapture]
+[Started.CaptureStarted Stopped.CaptureStopped Cancelled.CaptureCancelled StatusReported.CaptureStatusReport CapturesListed.CaptureListReport Retried.CaptureRetried AlreadyActive.CaptureAlreadyActive NoActive.NoActiveCapture SessionMismatch.CaptureSessionMismatch Unimplemented.RequestUnimplemented]
 {
-  CaptureSession Integer
-  WirePath String
-  SocketMode Integer
+  CaptureSession.Integer
+  WirePath.String
+  SocketMode.Integer
 
-  InputSource [SystemDefault]
-  TranscriptionMode [BatchOnStop]
-  OutputTarget [SystemClipboard]
-  OutputTargets (Vector OutputTarget)
+  InputSource.[SystemDefault]
+  TranscriptionMode.[BatchOnStop]
+  OutputTarget.[SystemClipboard]
+  OutputTargets.Vector.OutputTarget
 
-  WorkingSocketPath WirePath
-  WorkingSocketMode SocketMode
-  MetaSocketPath WirePath
-  MetaSocketMode SocketMode
-  CaptureStoreDirectory WirePath
-  ListenerDaemonConfiguration {
-    WorkingSocketPath
-    WorkingSocketMode
-    MetaSocketPath
-    MetaSocketMode
-    CaptureStoreDirectory
-    InputSource
-    TranscriptionMode
-    OutputTargets
-  }
+  WorkingSocketPath.WirePath
+  WorkingSocketMode.SocketMode
+  MetaSocketPath.WirePath
+  MetaSocketMode.SocketMode
+  CaptureStoreDirectory.WirePath
+  ListenerDaemonConfiguration.{ WorkingSocketPath WorkingSocketMode MetaSocketPath MetaSocketMode CaptureStoreDirectory InputSource TranscriptionMode OutputTargets }
 
-  StartCapture { }
-  StopCapture CaptureSession
-  CancelCapture CaptureSession
-  StatusRequest { }
-  ListCapturesRequest { }
-  RetryCapture CaptureSession
+  StartCapture.{}
+  StopCapture.CaptureSession
+  CancelCapture.CaptureSession
+  StatusRequest.{}
+  ListCapturesRequest.{}
+  RetryCapture.CaptureSession
 
-  StartedSession CaptureSession
-  CaptureStarted StartedSession
+  StartedSession.CaptureSession
+  CaptureStarted.StartedSession
 
-  AudioArtifactPath WirePath
-  DurableAudioArtifact AudioArtifactPath
+  AudioArtifactPath.WirePath
+  DurableAudioArtifact.AudioArtifactPath
 
-  ActiveCaptureSession CaptureSession
-  ActiveCapture {
-    ActiveCaptureSession
-    DurableAudioArtifact
-  }
-  CaptureStatus [Idle (Capturing ActiveCapture)]
-  CaptureStatusReport CaptureStatus
+  ActiveCaptureSession.CaptureSession
+  ActiveCapture.{ ActiveCaptureSession DurableAudioArtifact }
+  CaptureStatus.[Idle Capturing.ActiveCapture]
+  CaptureStatusReport.CaptureStatus
 
-  CaptureArtifactState [Recovering Retryable Completed Failed]
-  CaptureArtifactStateValue CaptureArtifactState
-  CaptureArtifactBytes Integer
-  CaptureArtifactDurationMilliseconds Integer
-  CaptureSummary {
-    session.CaptureSession
-    state.CaptureArtifactStateValue
-    artifact.DurableAudioArtifact
-    bytes.CaptureArtifactBytes
-    duration_milliseconds.CaptureArtifactDurationMilliseconds
-  }
-  CaptureSummaries (Vector CaptureSummary)
-  CaptureListReport CaptureSummaries
+  CaptureArtifactState.[Recovering Retryable Completed Failed]
+  CaptureArtifactStateValue.CaptureArtifactState
+  CaptureArtifactBytes.Integer
+  CaptureArtifactDurationMilliseconds.Integer
+  CaptureSummary.{ CaptureSession CaptureArtifactStateValue DurableAudioArtifact CaptureArtifactBytes CaptureArtifactDurationMilliseconds }
+  CaptureSummaries.Vector.CaptureSummary
+  CaptureListReport.CaptureSummaries
 
-  RetriedSession CaptureSession
-  CaptureRetried {
-    retried.RetriedSession
-    transcript.TranscriptText
-    outcomes.DeliveryOutcomes
-  }
+  RetriedSession.CaptureSession
+  CaptureRetried.{ RetriedSession TranscriptText DeliveryOutcomes }
 
-  CaptureAlreadyActive ActiveCaptureSession
-  NoActiveCapture { }
-  RequestedCaptureSession CaptureSession
-  CaptureSessionMismatch {
-    ActiveCaptureSession
-    RequestedCaptureSession
-  }
+  CaptureAlreadyActive.ActiveCaptureSession
+  NoActiveCapture.{}
+  RequestedCaptureSession.CaptureSession
+  CaptureSessionMismatch.{ ActiveCaptureSession RequestedCaptureSession }
 
-  StoppedSession CaptureSession
-  TranscriptText String
-  DeliveredTo OutputTarget
-  DeliveryFailureReason [TargetUnavailable TargetRejected]
-  DeliveryFailure {
-    target.OutputTarget
-    reason.DeliveryFailureReason
-  }
-  DeliveryOutcome [(Delivered DeliveredTo) (Failed DeliveryFailure)]
-  DeliveryOutcomes (Vector DeliveryOutcome)
-  CaptureStopped {
-    StoppedSession
-    DurableAudioArtifact
-    TranscriptText
-    DeliveryOutcomes
-  }
+  StoppedSession.CaptureSession
+  TranscriptText.String
+  DeliveredTo.OutputTarget
+  DeliveryFailureReason.[TargetUnavailable TargetRejected]
+  DeliveryFailure.{ OutputTarget DeliveryFailureReason }
+  DeliveryOutcome.[Delivered.DeliveredTo Failed.DeliveryFailure]
+  DeliveryOutcomes.Vector.DeliveryOutcome
+  CaptureStopped.{ StoppedSession DurableAudioArtifact TranscriptText DeliveryOutcomes }
 
-  CancelledSession CaptureSession
-  CaptureCancelled {
-    CancelledSession
-    DurableAudioArtifact
-  }
+  CancelledSession.CaptureSession
+  CaptureCancelled.{ CancelledSession DurableAudioArtifact }
 
-  OperationKind [Start Stop Cancel Status ListCaptures RetryCapture]
-  UnimplementedReason [
-    NotBuiltYet
-    AudioBackendUnavailable
-    TranscriptionBackendUnavailable
-    OutputTargetUnavailable
-    StoreUnavailable
-  ]
-  UnimplementedOperationKind OperationKind
-  Reason UnimplementedReason
-  RequestUnimplemented {
-    UnimplementedOperationKind
-    Reason
-  }
+  OperationKind.[Start Stop Cancel Status ListCaptures Retry]
+  UnimplementedReason.[NotBuiltYet AudioBackendUnavailable TranscriptionBackendUnavailable OutputTargetUnavailable StoreUnavailable]
+  UnimplementedOperationKind.OperationKind
+  Reason.UnimplementedReason
+  RequestUnimplemented.{ UnimplementedOperationKind Reason }
 }
+{}
+{}
