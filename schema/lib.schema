@@ -7,11 +7,15 @@
 [(Start StartCapture)
  (Stop StopCapture)
  (Cancel CancelCapture)
- (Status StatusRequest)]
+ (Status StatusRequest)
+ (ListCaptures ListCapturesRequest)
+ (RetryCapture RetryCapture)]
 [(Started CaptureStarted)
  (Stopped CaptureStopped)
  (Cancelled CaptureCancelled)
  (StatusReported CaptureStatusReport)
+ (CapturesListed CaptureListReport)
+ (CaptureRetried CaptureRetried)
  (CaptureAlreadyActive CaptureAlreadyActive)
  (NoActiveCapture NoActiveCapture)
  (CaptureSessionMismatch CaptureSessionMismatch)
@@ -46,6 +50,8 @@
   StopCapture CaptureSession
   CancelCapture CaptureSession
   StatusRequest { }
+  ListCapturesRequest { }
+  RetryCapture CaptureSession
 
   StartedSession CaptureSession
   CaptureStarted StartedSession
@@ -60,6 +66,27 @@
   }
   CaptureStatus [Idle (Capturing ActiveCapture)]
   CaptureStatusReport CaptureStatus
+
+  CaptureArtifactState [Recovering Retryable Completed Failed]
+  CaptureArtifactStateValue CaptureArtifactState
+  CaptureArtifactBytes Integer
+  CaptureArtifactDurationMilliseconds Integer
+  CaptureSummary {
+    session.CaptureSession
+    state.CaptureArtifactStateValue
+    artifact.DurableAudioArtifact
+    bytes.CaptureArtifactBytes
+    duration_milliseconds.CaptureArtifactDurationMilliseconds
+  }
+  CaptureSummaries (Vector CaptureSummary)
+  CaptureListReport CaptureSummaries
+
+  RetriedSession CaptureSession
+  CaptureRetried {
+    retried.RetriedSession
+    transcript.TranscriptText
+    outcomes.DeliveryOutcomes
+  }
 
   CaptureAlreadyActive ActiveCaptureSession
   NoActiveCapture { }
@@ -92,7 +119,7 @@
     DurableAudioArtifact
   }
 
-  OperationKind [Start Stop Cancel Status]
+  OperationKind [Start Stop Cancel Status ListCaptures RetryCapture]
   UnimplementedReason [
     NotBuiltYet
     AudioBackendUnavailable

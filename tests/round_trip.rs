@@ -9,10 +9,10 @@ use signal_listener::{
     ActiveCapture, ActiveCaptureSession, AudioArtifactPath, CancelledSession, CaptureAlreadyActive,
     CaptureCancelled, CaptureSession, CaptureSessionMismatch, CaptureStarted, CaptureStatus,
     CaptureStopped, DeliveredTo, DeliveryOutcome, DeliveryOutcomes, DurableAudioArtifact, Frame,
-    FrameBody, Input, NoActiveCapture, OperationKind, Output, OutputTarget, Reason,
-    RequestUnimplemented, RequestedCaptureSession, StartCapture, StartedSession, StatusRequest,
-    StopCapture, StoppedSession, TranscriptText, UnimplementedOperationKind, UnimplementedReason,
-    WirePath,
+    FrameBody, Input, ListCapturesRequest, NoActiveCapture, OperationKind, Output, OutputTarget,
+    Reason, RequestUnimplemented, RequestedCaptureSession, RetryCapture, StartCapture,
+    StartedSession, StatusRequest, StopCapture, StoppedSession, TranscriptText,
+    UnimplementedOperationKind, UnimplementedReason, WirePath,
 };
 
 struct ListenerFixture;
@@ -101,6 +101,16 @@ fn start_stop_and_status_requests_round_trip() {
     assert_eq!(status.operation_kind(), OperationKind::Status);
     ListenerFixture::assert_request_round_trips(status.clone());
     ListenerFixture::assert_nota_round_trips(&status);
+
+    let list = Input::ListCaptures(ListCapturesRequest {});
+    assert_eq!(list.operation_kind(), OperationKind::ListCaptures);
+    ListenerFixture::assert_request_round_trips(list.clone());
+    ListenerFixture::assert_nota_round_trips(&list);
+
+    let retry = Input::RetryCapture(RetryCapture::new(CaptureSession::new(7)));
+    assert_eq!(retry.operation_kind(), OperationKind::RetryCapture);
+    ListenerFixture::assert_request_round_trips(retry.clone());
+    ListenerFixture::assert_nota_round_trips(&retry);
 }
 
 #[test]

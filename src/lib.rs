@@ -70,6 +70,8 @@ impl Input {
             Self::Stop(_) => OperationKind::Stop,
             Self::Cancel(_) => OperationKind::Cancel,
             Self::Status(_) => OperationKind::Status,
+            Self::ListCaptures(_) => OperationKind::ListCaptures,
+            Self::RetryCapture(_) => OperationKind::RetryCapture,
         }
     }
 }

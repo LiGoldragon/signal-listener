@@ -197,6 +197,22 @@ pub struct StatusRequest {}
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct ListCapturesRequest {}
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct RetryCapture(CaptureSession);
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct StartedSession(CaptureSession);
 
 #[rustfmt::skip]
@@ -260,6 +276,102 @@ pub enum CaptureStatus {
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct CaptureStatusReport(CaptureStatus);
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
+#[derive(
+    rkyv::Archive,
+    rkyv::Serialize,
+    rkyv::Deserialize,
+    Clone,
+    Copy,
+    Debug,
+    PartialEq,
+    Eq,
+)]
+pub enum CaptureArtifactState {
+    Recovering,
+    Retryable,
+    Completed,
+    Failed,
+}
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct CaptureArtifactStateValue(CaptureArtifactState);
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct CaptureArtifactBytes(Integer);
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct CaptureArtifactDurationMilliseconds(Integer);
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct CaptureSummary {
+    pub session: CaptureSession,
+    pub state: CaptureArtifactStateValue,
+    pub artifact: DurableAudioArtifact,
+    pub bytes: CaptureArtifactBytes,
+    pub duration_milliseconds: CaptureArtifactDurationMilliseconds,
+}
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct CaptureSummaries(Vec<CaptureSummary>);
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct CaptureListReport(CaptureSummaries);
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct RetriedSession(CaptureSession);
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct CaptureRetried {
+    pub retried: RetriedSession,
+    pub transcript: TranscriptText,
+    pub outcomes: DeliveryOutcomes,
+}
 
 #[rustfmt::skip]
 #[cfg_attr(
@@ -422,6 +534,8 @@ pub enum OperationKind {
     Stop,
     Cancel,
     Status,
+    ListCaptures,
+    RetryCapture,
 }
 
 #[rustfmt::skip]
@@ -485,6 +599,8 @@ pub enum Input {
     Stop(StopCapture),
     Cancel(CancelCapture),
     Status(StatusRequest),
+    ListCaptures(ListCapturesRequest),
+    RetryCapture(RetryCapture),
 }
 
 #[rustfmt::skip]
@@ -498,6 +614,8 @@ pub enum Output {
     Stopped(CaptureStopped),
     Cancelled(CaptureCancelled),
     StatusReported(CaptureStatusReport),
+    CapturesListed(CaptureListReport),
+    CaptureRetried(CaptureRetried),
     CaptureAlreadyActive(CaptureAlreadyActive),
     NoActiveCapture(NoActiveCapture),
     CaptureSessionMismatch(CaptureSessionMismatch),
@@ -714,6 +832,25 @@ impl From<CaptureSession> for CancelCapture {
 }
 
 #[rustfmt::skip]
+impl RetryCapture {
+    pub fn new(payload: CaptureSession) -> Self {
+        Self(payload)
+    }
+    pub fn payload(&self) -> &CaptureSession {
+        &self.0
+    }
+    pub fn into_payload(self) -> CaptureSession {
+        self.0
+    }
+}
+#[rustfmt::skip]
+impl From<CaptureSession> for RetryCapture {
+    fn from(payload: CaptureSession) -> Self {
+        Self::new(payload)
+    }
+}
+
+#[rustfmt::skip]
 impl StartedSession {
     pub fn new(payload: CaptureSession) -> Self {
         Self(payload)
@@ -823,6 +960,120 @@ impl CaptureStatusReport {
 #[rustfmt::skip]
 impl From<CaptureStatus> for CaptureStatusReport {
     fn from(payload: CaptureStatus) -> Self {
+        Self::new(payload)
+    }
+}
+
+#[rustfmt::skip]
+impl CaptureArtifactStateValue {
+    pub fn new(payload: CaptureArtifactState) -> Self {
+        Self(payload)
+    }
+    pub fn payload(&self) -> &CaptureArtifactState {
+        &self.0
+    }
+    pub fn into_payload(self) -> CaptureArtifactState {
+        self.0
+    }
+}
+#[rustfmt::skip]
+impl From<CaptureArtifactState> for CaptureArtifactStateValue {
+    fn from(payload: CaptureArtifactState) -> Self {
+        Self::new(payload)
+    }
+}
+
+#[rustfmt::skip]
+impl CaptureArtifactBytes {
+    pub fn new(payload: Integer) -> Self {
+        Self(payload)
+    }
+    pub fn payload(&self) -> &Integer {
+        &self.0
+    }
+    pub fn into_payload(self) -> Integer {
+        self.0
+    }
+}
+#[rustfmt::skip]
+impl From<Integer> for CaptureArtifactBytes {
+    fn from(payload: Integer) -> Self {
+        Self::new(payload)
+    }
+}
+
+#[rustfmt::skip]
+impl CaptureArtifactDurationMilliseconds {
+    pub fn new(payload: Integer) -> Self {
+        Self(payload)
+    }
+    pub fn payload(&self) -> &Integer {
+        &self.0
+    }
+    pub fn into_payload(self) -> Integer {
+        self.0
+    }
+}
+#[rustfmt::skip]
+impl From<Integer> for CaptureArtifactDurationMilliseconds {
+    fn from(payload: Integer) -> Self {
+        Self::new(payload)
+    }
+}
+
+#[rustfmt::skip]
+impl CaptureSummaries {
+    pub fn new(payload: Vec<CaptureSummary>) -> Self {
+        Self(payload)
+    }
+    pub fn payload(&self) -> &Vec<CaptureSummary> {
+        &self.0
+    }
+    pub fn into_payload(self) -> Vec<CaptureSummary> {
+        self.0
+    }
+}
+#[rustfmt::skip]
+impl From<Vec<CaptureSummary>> for CaptureSummaries {
+    fn from(payload: Vec<CaptureSummary>) -> Self {
+        Self::new(payload)
+    }
+}
+
+#[rustfmt::skip]
+impl CaptureListReport {
+    pub fn new(payload: CaptureSummaries) -> Self {
+        Self(payload)
+    }
+    pub fn payload(&self) -> &CaptureSummaries {
+        &self.0
+    }
+    pub fn into_payload(self) -> CaptureSummaries {
+        self.0
+    }
+}
+#[rustfmt::skip]
+impl From<CaptureSummaries> for CaptureListReport {
+    fn from(payload: CaptureSummaries) -> Self {
+        Self::new(payload)
+    }
+}
+
+#[rustfmt::skip]
+impl RetriedSession {
+    pub fn new(payload: CaptureSession) -> Self {
+        Self(payload)
+    }
+    pub fn payload(&self) -> &CaptureSession {
+        &self.0
+    }
+    pub fn into_payload(self) -> CaptureSession {
+        self.0
+    }
+}
+#[rustfmt::skip]
+impl From<CaptureSession> for RetriedSession {
+    fn from(payload: CaptureSession) -> Self {
         Self::new(payload)
     }
 }
@@ -1029,6 +1280,12 @@ impl Input {
     pub fn status(payload: StatusRequest) -> Self {
         Self::Status(payload)
     }
+    pub fn list_captures(payload: ListCapturesRequest) -> Self {
+        Self::ListCaptures(payload)
+    }
+    pub fn retry_capture(payload: CaptureSession) -> Self {
+        Self::RetryCapture(RetryCapture::new(payload))
+    }
 }
 
 #[rustfmt::skip]
@@ -1044,6 +1301,12 @@ impl Output {
     }
     pub fn status_reported(payload: CaptureStatus) -> Self {
         Self::StatusReported(CaptureStatusReport::new(payload))
+    }
+    pub fn captures_listed(payload: CaptureSummaries) -> Self {
+        Self::CapturesListed(CaptureListReport::new(payload))
+    }
+    pub fn capture_retried(payload: CaptureRetried) -> Self {
+        Self::CaptureRetried(payload)
     }
     pub fn capture_already_active(payload: ActiveCaptureSession) -> Self {
         Self::CaptureAlreadyActive(CaptureAlreadyActive::new(payload))
@@ -1109,6 +1372,20 @@ impl From<StatusRequest> for Input {
 }
 
 #[rustfmt::skip]
+impl From<ListCapturesRequest> for Input {
+    fn from(payload: ListCapturesRequest) -> Self {
+        Self::ListCaptures(payload)
+    }
+}
+
+#[rustfmt::skip]
+impl From<RetryCapture> for Input {
+    fn from(payload: RetryCapture) -> Self {
+        Self::RetryCapture(payload)
+    }
+}
+
+#[rustfmt::skip]
 impl From<CaptureStarted> for Output {
     fn from(payload: CaptureStarted) -> Self {
         Self::Started(payload)
@@ -1133,6 +1410,20 @@ impl From<CaptureCancelled> for Output {
 impl From<CaptureStatusReport> for Output {
     fn from(payload: CaptureStatusReport) -> Self {
         Self::StatusReported(payload)
+    }
+}
+
+#[rustfmt::skip]
+impl From<CaptureListReport> for Output {
+    fn from(payload: CaptureListReport) -> Self {
+        Self::CapturesListed(payload)
+    }
+}
+
+#[rustfmt::skip]
+impl From<CaptureRetried> for Output {
+    fn from(payload: CaptureRetried) -> Self {
+        Self::CaptureRetried(payload)
     }
 }
 
@@ -1202,14 +1493,18 @@ pub mod short_header {
     pub const INPUT_STOP: u64 = 0x0001000000000000;
     pub const INPUT_CANCEL: u64 = 0x0002000000000000;
     pub const INPUT_STATUS: u64 = 0x0003000000000000;
+    pub const INPUT_LIST_CAPTURES: u64 = 0x0004000000000000;
+    pub const INPUT_RETRY_CAPTURE: u64 = 0x0005000000000000;
     pub const OUTPUT_STARTED: u64 = 0x0100000000000000;
     pub const OUTPUT_STOPPED: u64 = 0x0101000000000000;
     pub const OUTPUT_CANCELLED: u64 = 0x0102000000000000;
     pub const OUTPUT_STATUS_REPORTED: u64 = 0x0103000000000000;
-    pub const OUTPUT_CAPTURE_ALREADY_ACTIVE: u64 = 0x0104000000000000;
-    pub const OUTPUT_NO_ACTIVE_CAPTURE: u64 = 0x0105000000000000;
-    pub const OUTPUT_CAPTURE_SESSION_MISMATCH: u64 = 0x0106000000000000;
-    pub const OUTPUT_REQUEST_UNIMPLEMENTED: u64 = 0x0107000000000000;
+    pub const OUTPUT_CAPTURES_LISTED: u64 = 0x0104000000000000;
+    pub const OUTPUT_CAPTURE_RETRIED: u64 = 0x0105000000000000;
+    pub const OUTPUT_CAPTURE_ALREADY_ACTIVE: u64 = 0x0106000000000000;
+    pub const OUTPUT_NO_ACTIVE_CAPTURE: u64 = 0x0107000000000000;
+    pub const OUTPUT_CAPTURE_SESSION_MISMATCH: u64 = 0x0108000000000000;
+    pub const OUTPUT_REQUEST_UNIMPLEMENTED: u64 = 0x0109000000000000;
 }
 
 #[rustfmt::skip]
@@ -1267,6 +1562,8 @@ pub enum InputRoute {
     Stop,
     Cancel,
     Status,
+    ListCaptures,
+    RetryCapture,
 }
 
 #[rustfmt::skip]
@@ -1289,6 +1586,8 @@ pub enum OutputRoute {
     Stopped,
     Cancelled,
     StatusReported,
+    CapturesListed,
+    CaptureRetried,
     CaptureAlreadyActive,
     NoActiveCapture,
     CaptureSessionMismatch,
@@ -1303,6 +1602,8 @@ impl Input {
             Self::Stop(_) => InputRoute::Stop,
             Self::Cancel(_) => InputRoute::Cancel,
             Self::Status(_) => InputRoute::Status,
+            Self::ListCaptures(_) => InputRoute::ListCaptures,
+            Self::RetryCapture(_) => InputRoute::RetryCapture,
         }
     }
     pub fn short_header(&self) -> u64 {
@@ -1311,6 +1612,8 @@ impl Input {
             Self::Stop(_) => short_header::INPUT_STOP,
             Self::Cancel(_) => short_header::INPUT_CANCEL,
             Self::Status(_) => short_header::INPUT_STATUS,
+            Self::ListCaptures(_) => short_header::INPUT_LIST_CAPTURES,
+            Self::RetryCapture(_) => short_header::INPUT_RETRY_CAPTURE,
         }
     }
     pub fn route_from_short_header(header: u64) -> Result<InputRoute, SignalFrameError> {
@@ -1319,6 +1622,8 @@ impl Input {
             short_header::INPUT_STOP => Ok(InputRoute::Stop),
             short_header::INPUT_CANCEL => Ok(InputRoute::Cancel),
             short_header::INPUT_STATUS => Ok(InputRoute::Status),
+            short_header::INPUT_LIST_CAPTURES => Ok(InputRoute::ListCaptures),
+            short_header::INPUT_RETRY_CAPTURE => Ok(InputRoute::RetryCapture),
             _ => {
                 Err(SignalFrameError::UnknownHeader {
                     root_enum: "Input",
@@ -1373,6 +1678,8 @@ impl Output {
             Self::Stopped(_) => OutputRoute::Stopped,
             Self::Cancelled(_) => OutputRoute::Cancelled,
             Self::StatusReported(_) => OutputRoute::StatusReported,
+            Self::CapturesListed(_) => OutputRoute::CapturesListed,
+            Self::CaptureRetried(_) => OutputRoute::CaptureRetried,
             Self::CaptureAlreadyActive(_) => OutputRoute::CaptureAlreadyActive,
             Self::NoActiveCapture(_) => OutputRoute::NoActiveCapture,
             Self::CaptureSessionMismatch(_) => OutputRoute::CaptureSessionMismatch,
@@ -1385,6 +1692,8 @@ impl Output {
             Self::Stopped(_) => short_header::OUTPUT_STOPPED,
             Self::Cancelled(_) => short_header::OUTPUT_CANCELLED,
             Self::StatusReported(_) => short_header::OUTPUT_STATUS_REPORTED,
+            Self::CapturesListed(_) => short_header::OUTPUT_CAPTURES_LISTED,
+            Self::CaptureRetried(_) => short_header::OUTPUT_CAPTURE_RETRIED,
             Self::CaptureAlreadyActive(_) => short_header::OUTPUT_CAPTURE_ALREADY_ACTIVE,
             Self::NoActiveCapture(_) => short_header::OUTPUT_NO_ACTIVE_CAPTURE,
             Self::CaptureSessionMismatch(_) => {
@@ -1401,6 +1710,8 @@ impl Output {
             short_header::OUTPUT_STOPPED => Ok(OutputRoute::Stopped),
             short_header::OUTPUT_CANCELLED => Ok(OutputRoute::Cancelled),
             short_header::OUTPUT_STATUS_REPORTED => Ok(OutputRoute::StatusReported),
+            short_header::OUTPUT_CAPTURES_LISTED => Ok(OutputRoute::CapturesListed),
+            short_header::OUTPUT_CAPTURE_RETRIED => Ok(OutputRoute::CaptureRetried),
             short_header::OUTPUT_CAPTURE_ALREADY_ACTIVE => {
                 Ok(OutputRoute::CaptureAlreadyActive)
             }
@@ -1461,7 +1772,14 @@ impl Output {
 impl signal_frame::RequestPayload for Input {}
 #[rustfmt::skip]
 impl signal_frame::SignalOperationHeads for Input {
-    const HEADS: &'static [&'static str] = &["Start", "Stop", "Cancel", "Status"];
+    const HEADS: &'static [&'static str] = &[
+        "Start",
+        "Stop",
+        "Cancel",
+        "Status",
+        "ListCaptures",
+        "RetryCapture",
+    ];
 }
 #[rustfmt::skip]
 impl signal_frame::LogVariant for Input {
