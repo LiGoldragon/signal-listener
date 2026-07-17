@@ -72,6 +72,7 @@ impl Input {
             Self::Status(_) => OperationKind::Status,
             Self::ListCaptures(_) => OperationKind::ListCaptures,
             Self::Retry(_) => OperationKind::Retry,
+            Self::Toggle(_) => OperationKind::Toggle,
         }
     }
 }

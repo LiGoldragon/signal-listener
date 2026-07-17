@@ -11,7 +11,7 @@ use signal_listener::{
     CaptureStopped, DeliveredTo, DeliveryOutcome, DeliveryOutcomes, DurableAudioArtifact, Frame,
     FrameBody, Input, ListCapturesRequest, NoActiveCapture, OperationKind, Output, OutputTarget,
     Reason, RequestUnimplemented, RequestedCaptureSession, RetryCapture, StartCapture,
-    StartedSession, StatusRequest, StopCapture, StoppedSession, TranscriptText,
+    StartedSession, StatusRequest, StopCapture, StoppedSession, ToggleCapture, TranscriptText,
     UnimplementedOperationKind, UnimplementedReason, WirePath,
 };
 
@@ -111,6 +111,11 @@ fn start_stop_and_status_requests_round_trip() {
     assert_eq!(retry.operation_kind(), OperationKind::Retry);
     ListenerFixture::assert_request_round_trips(retry.clone());
     ListenerFixture::assert_nota_round_trips(&retry);
+
+    let toggle = Input::Toggle(ToggleCapture {});
+    assert_eq!(toggle.operation_kind(), OperationKind::Toggle);
+    ListenerFixture::assert_request_round_trips(toggle.clone());
+    ListenerFixture::assert_nota_round_trips(&toggle);
 }
 
 #[test]

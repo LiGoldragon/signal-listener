@@ -213,6 +213,14 @@ pub struct RetryCapture(CaptureSession);
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct ToggleCapture {}
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct StartedSession(CaptureSession);
 
 #[rustfmt::skip]
@@ -536,6 +544,7 @@ pub enum OperationKind {
     Status,
     ListCaptures,
     Retry,
+    Toggle,
 }
 
 #[rustfmt::skip]
@@ -601,6 +610,7 @@ pub enum Input {
     Status(StatusRequest),
     ListCaptures(ListCapturesRequest),
     Retry(RetryCapture),
+    Toggle(ToggleCapture),
 }
 
 #[rustfmt::skip]
@@ -1286,6 +1296,9 @@ impl Input {
     pub fn retry(payload: CaptureSession) -> Self {
         Self::Retry(RetryCapture::new(payload))
     }
+    pub fn toggle(payload: ToggleCapture) -> Self {
+        Self::Toggle(payload)
+    }
 }
 
 #[rustfmt::skip]
@@ -1382,6 +1395,13 @@ impl From<ListCapturesRequest> for Input {
 impl From<RetryCapture> for Input {
     fn from(payload: RetryCapture) -> Self {
         Self::Retry(payload)
+    }
+}
+
+#[rustfmt::skip]
+impl From<ToggleCapture> for Input {
+    fn from(payload: ToggleCapture) -> Self {
+        Self::Toggle(payload)
     }
 }
 
@@ -1495,6 +1515,7 @@ pub mod short_header {
     pub const INPUT_STATUS: u64 = 0x0003000000000000;
     pub const INPUT_LIST_CAPTURES: u64 = 0x0004000000000000;
     pub const INPUT_RETRY: u64 = 0x0005000000000000;
+    pub const INPUT_TOGGLE: u64 = 0x0006000000000000;
     pub const OUTPUT_STARTED: u64 = 0x0100000000000000;
     pub const OUTPUT_STOPPED: u64 = 0x0101000000000000;
     pub const OUTPUT_CANCELLED: u64 = 0x0102000000000000;
@@ -1564,6 +1585,7 @@ pub enum InputRoute {
     Status,
     ListCaptures,
     Retry,
+    Toggle,
 }
 
 #[rustfmt::skip]
@@ -1604,6 +1626,7 @@ impl Input {
             Self::Status(_) => InputRoute::Status,
             Self::ListCaptures(_) => InputRoute::ListCaptures,
             Self::Retry(_) => InputRoute::Retry,
+            Self::Toggle(_) => InputRoute::Toggle,
         }
     }
     pub fn short_header(&self) -> u64 {
@@ -1614,6 +1637,7 @@ impl Input {
             Self::Status(_) => short_header::INPUT_STATUS,
             Self::ListCaptures(_) => short_header::INPUT_LIST_CAPTURES,
             Self::Retry(_) => short_header::INPUT_RETRY,
+            Self::Toggle(_) => short_header::INPUT_TOGGLE,
         }
     }
     pub fn route_from_short_header(header: u64) -> Result<InputRoute, SignalFrameError> {
@@ -1624,6 +1648,7 @@ impl Input {
             short_header::INPUT_STATUS => Ok(InputRoute::Status),
             short_header::INPUT_LIST_CAPTURES => Ok(InputRoute::ListCaptures),
             short_header::INPUT_RETRY => Ok(InputRoute::Retry),
+            short_header::INPUT_TOGGLE => Ok(InputRoute::Toggle),
             _ => {
                 Err(SignalFrameError::UnknownHeader {
                     root_enum: "Input",
@@ -1771,6 +1796,7 @@ impl signal_frame::SignalOperationHeads for Input {
         "Status",
         "ListCaptures",
         "Retry",
+        "Toggle",
     ];
 }
 #[rustfmt::skip]
