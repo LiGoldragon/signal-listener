@@ -1,7 +1,7 @@
 ;; signal-listener — ordinary working wire contract for Listener.
 {}
 [Start.StartCapture Stop.StopCapture Cancel.CancelCapture Status.StatusRequest ListCaptures.ListCapturesRequest Retry.RetryCapture Toggle.ToggleCapture]
-[Started.CaptureStarted Stopped.CaptureStopped Cancelled.CaptureCancelled StatusReported.CaptureStatusReport CapturesListed.CaptureListReport Retried.CaptureRetried AlreadyActive.CaptureAlreadyActive NoActive.NoActiveCapture SessionMismatch.CaptureSessionMismatch Unimplemented.RequestUnimplemented]
+[Started.CaptureStarted Stopped.CaptureStopped Cancelled.CaptureCancelled CancellationRequested.CaptureCancellationRequested StatusReported.CaptureStatusReport CapturesListed.CaptureListReport Retried.CaptureRetried AlreadyActive.CaptureAlreadyActive NoActive.NoActiveCapture SessionMismatch.CaptureSessionMismatch Unimplemented.RequestUnimplemented]
 {
   CaptureSession.Integer
   WirePath.String
@@ -65,6 +65,8 @@
 
   CancelledSession.CaptureSession
   CaptureCancelled.{ CancelledSession DurableAudioArtifact }
+  CancellationRequestedSession.CaptureSession
+  CaptureCancellationRequested.{ CancellationRequestedSession DurableAudioArtifact }
 
   OperationKind.[Start Stop Cancel Status ListCaptures Retry Toggle]
   UnimplementedReason.[NotBuiltYet AudioBackendUnavailable TranscriptionBackendUnavailable OutputTargetUnavailable StoreUnavailable]

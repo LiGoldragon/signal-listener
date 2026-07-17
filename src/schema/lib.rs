@@ -527,6 +527,25 @@ pub struct CaptureCancelled {
     feature = "nota-text",
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct CancellationRequestedSession(CaptureSession);
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct CaptureCancellationRequested {
+    pub cancellation_requested_session: CancellationRequestedSession,
+    pub durable_audio_artifact: DurableAudioArtifact,
+}
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
 #[derive(
     rkyv::Archive,
     rkyv::Serialize,
@@ -623,6 +642,7 @@ pub enum Output {
     Started(CaptureStarted),
     Stopped(CaptureStopped),
     Cancelled(CaptureCancelled),
+    CancellationRequested(CaptureCancellationRequested),
     StatusReported(CaptureStatusReport),
     CapturesListed(CaptureListReport),
     Retried(CaptureRetried),
@@ -1222,6 +1242,25 @@ impl From<CaptureSession> for CancelledSession {
 }
 
 #[rustfmt::skip]
+impl CancellationRequestedSession {
+    pub fn new(payload: CaptureSession) -> Self {
+        Self(payload)
+    }
+    pub fn payload(&self) -> &CaptureSession {
+        &self.0
+    }
+    pub fn into_payload(self) -> CaptureSession {
+        self.0
+    }
+}
+#[rustfmt::skip]
+impl From<CaptureSession> for CancellationRequestedSession {
+    fn from(payload: CaptureSession) -> Self {
+        Self::new(payload)
+    }
+}
+
+#[rustfmt::skip]
 impl UnimplementedOperationKind {
     pub fn new(payload: OperationKind) -> Self {
         Self(payload)
@@ -1311,6 +1350,9 @@ impl Output {
     }
     pub fn cancelled(payload: CaptureCancelled) -> Self {
         Self::Cancelled(payload)
+    }
+    pub fn cancellation_requested(payload: CaptureCancellationRequested) -> Self {
+        Self::CancellationRequested(payload)
     }
     pub fn status_reported(payload: CaptureStatus) -> Self {
         Self::StatusReported(CaptureStatusReport::new(payload))
@@ -1427,6 +1469,13 @@ impl From<CaptureCancelled> for Output {
 }
 
 #[rustfmt::skip]
+impl From<CaptureCancellationRequested> for Output {
+    fn from(payload: CaptureCancellationRequested) -> Self {
+        Self::CancellationRequested(payload)
+    }
+}
+
+#[rustfmt::skip]
 impl From<CaptureStatusReport> for Output {
     fn from(payload: CaptureStatusReport) -> Self {
         Self::StatusReported(payload)
@@ -1519,13 +1568,14 @@ pub mod short_header {
     pub const OUTPUT_STARTED: u64 = 0x0100000000000000;
     pub const OUTPUT_STOPPED: u64 = 0x0101000000000000;
     pub const OUTPUT_CANCELLED: u64 = 0x0102000000000000;
-    pub const OUTPUT_STATUS_REPORTED: u64 = 0x0103000000000000;
-    pub const OUTPUT_CAPTURES_LISTED: u64 = 0x0104000000000000;
-    pub const OUTPUT_RETRIED: u64 = 0x0105000000000000;
-    pub const OUTPUT_ALREADY_ACTIVE: u64 = 0x0106000000000000;
-    pub const OUTPUT_NO_ACTIVE: u64 = 0x0107000000000000;
-    pub const OUTPUT_SESSION_MISMATCH: u64 = 0x0108000000000000;
-    pub const OUTPUT_UNIMPLEMENTED: u64 = 0x0109000000000000;
+    pub const OUTPUT_CANCELLATION_REQUESTED: u64 = 0x0103000000000000;
+    pub const OUTPUT_STATUS_REPORTED: u64 = 0x0104000000000000;
+    pub const OUTPUT_CAPTURES_LISTED: u64 = 0x0105000000000000;
+    pub const OUTPUT_RETRIED: u64 = 0x0106000000000000;
+    pub const OUTPUT_ALREADY_ACTIVE: u64 = 0x0107000000000000;
+    pub const OUTPUT_NO_ACTIVE: u64 = 0x0108000000000000;
+    pub const OUTPUT_SESSION_MISMATCH: u64 = 0x0109000000000000;
+    pub const OUTPUT_UNIMPLEMENTED: u64 = 0x010A000000000000;
 }
 
 #[rustfmt::skip]
@@ -1607,6 +1657,7 @@ pub enum OutputRoute {
     Started,
     Stopped,
     Cancelled,
+    CancellationRequested,
     StatusReported,
     CapturesListed,
     Retried,
@@ -1702,6 +1753,7 @@ impl Output {
             Self::Started(_) => OutputRoute::Started,
             Self::Stopped(_) => OutputRoute::Stopped,
             Self::Cancelled(_) => OutputRoute::Cancelled,
+            Self::CancellationRequested(_) => OutputRoute::CancellationRequested,
             Self::StatusReported(_) => OutputRoute::StatusReported,
             Self::CapturesListed(_) => OutputRoute::CapturesListed,
             Self::Retried(_) => OutputRoute::Retried,
@@ -1716,6 +1768,7 @@ impl Output {
             Self::Started(_) => short_header::OUTPUT_STARTED,
             Self::Stopped(_) => short_header::OUTPUT_STOPPED,
             Self::Cancelled(_) => short_header::OUTPUT_CANCELLED,
+            Self::CancellationRequested(_) => short_header::OUTPUT_CANCELLATION_REQUESTED,
             Self::StatusReported(_) => short_header::OUTPUT_STATUS_REPORTED,
             Self::CapturesListed(_) => short_header::OUTPUT_CAPTURES_LISTED,
             Self::Retried(_) => short_header::OUTPUT_RETRIED,
@@ -1732,6 +1785,9 @@ impl Output {
             short_header::OUTPUT_STARTED => Ok(OutputRoute::Started),
             short_header::OUTPUT_STOPPED => Ok(OutputRoute::Stopped),
             short_header::OUTPUT_CANCELLED => Ok(OutputRoute::Cancelled),
+            short_header::OUTPUT_CANCELLATION_REQUESTED => {
+                Ok(OutputRoute::CancellationRequested)
+            }
             short_header::OUTPUT_STATUS_REPORTED => Ok(OutputRoute::StatusReported),
             short_header::OUTPUT_CAPTURES_LISTED => Ok(OutputRoute::CapturesListed),
             short_header::OUTPUT_RETRIED => Ok(OutputRoute::Retried),

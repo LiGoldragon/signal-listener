@@ -11,7 +11,8 @@ The contract carries the working capture/transcription surface:
 ListenerOperation                 ListenerReply
 Start(StartCapture)               Started(CaptureStarted)
 Stop(StopCapture)                 Stopped(CaptureStopped)
-Cancel(CancelCapture)             Cancelled(CaptureCancelled)
+Cancel(CancelCapture)             CancellationRequested(CaptureCancellationRequested)
+Toggle(ToggleCapture)             Started(CaptureStarted) | CancellationRequested(CaptureCancellationRequested)
 Status(StatusRequest)             StatusReported(CaptureStatusReport)
                                    CaptureAlreadyActive(active session)
                                    NoActiveCapture
@@ -24,8 +25,10 @@ Status(StatusRequest)             StatusReported(CaptureStatusReport)
 and deliver text to the configured outputs. `Cancel` closes that session while
 retaining the durable artifact and without requesting transcription or delivery.
 `Status` reports whether the single active capture slot is idle or writing one
-durable audio artifact. The first output target in the contract is
-`SystemClipboard`.
+durable audio artifact. `Toggle` starts an idle slot and requests cancellation
+from an active lifecycle phase. `CancellationRequested` acknowledges that
+nonblocking request; the runtime separately publishes the terminal state. The
+first output target in the contract is `SystemClipboard`.
 
 ## Owned
 

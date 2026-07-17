@@ -6,7 +6,8 @@ use signal_frame::{
     SubReply,
 };
 use signal_listener::{
-    ActiveCapture, ActiveCaptureSession, AudioArtifactPath, CancelledSession, CaptureAlreadyActive,
+    ActiveCapture, ActiveCaptureSession, AudioArtifactPath, CancelledSession,
+    CancellationRequestedSession, CaptureAlreadyActive, CaptureCancellationRequested,
     CaptureCancelled, CaptureSession, CaptureSessionMismatch, CaptureStarted, CaptureStatus,
     CaptureStopped, DeliveredTo, DeliveryOutcome, DeliveryOutcomes, DurableAudioArtifact, Frame,
     FrameBody, Input, ListCapturesRequest, NoActiveCapture, OperationKind, Output, OutputTarget,
@@ -134,6 +135,10 @@ fn reply_variants_round_trip() {
         }),
         Output::Cancelled(CaptureCancelled {
             cancelled_session: CancelledSession::new(CaptureSession::new(7)),
+            durable_audio_artifact: ListenerFixture::audio_artifact(),
+        }),
+        Output::CancellationRequested(CaptureCancellationRequested {
+            cancellation_requested_session: CancellationRequestedSession::new(CaptureSession::new(7)),
             durable_audio_artifact: ListenerFixture::audio_artifact(),
         }),
         Output::status_reported(CaptureStatus::Capturing(ActiveCapture {
