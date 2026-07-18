@@ -9,11 +9,13 @@ The contract carries the working capture/transcription surface:
 
 ```text
 ListenerOperation                 ListenerReply
-Start(StartCapture)               Started(CaptureStarted)
-Stop(StopCapture)                 Stopped(CaptureStopped)
+Start(StartCapture)               Started(CaptureStarted) | MaintenanceLeaseActive(epoch)
+Stop(StopCapture)                 CompletionRequested(CaptureCompletionRequested)
 Cancel(CancelCapture)             CancellationRequested(CaptureCancellationRequested)
-Toggle(ToggleCapture)             Started(CaptureStarted) | CancellationRequested(CaptureCancellationRequested)
-Status(StatusRequest)             StatusReported(CaptureStatusReport)
+Toggle(ToggleCapture)             Started(CaptureStarted) | CompletionRequested(CaptureCompletionRequested)
+Status(StatusRequest)             StatusReported(recording/finalizing/transcribing/delivered/error)
+AcquireMaintenance({})            MaintenanceLeaseGranted(epoch), held by this connection
+ReleaseMaintenance({})            MaintenanceLeaseReleased | MaintenanceLeaseNotHeld
                                    CaptureAlreadyActive(active session)
                                    NoActiveCapture
                                    CaptureSessionMismatch(active, requested)
@@ -21,14 +23,19 @@ Status(StatusRequest)             StatusReported(CaptureStatusReport)
 ```
 
 `Start` begins a daemon-owned capture session using the configured default input.
-`Stop` closes that session, allowing the daemon to transcribe the durable capture
-and deliver text to the configured outputs. `Cancel` closes that session while
-retaining the durable artifact and without requesting transcription or delivery.
-`Status` reports whether the single active capture slot is idle or writing one
-durable audio artifact. `Toggle` starts an idle slot and requests cancellation
-from an active lifecycle phase. `CancellationRequested` acknowledges that
-nonblocking request; the runtime separately publishes the terminal state. The
-first output target in the contract is `SystemClipboard`.
+`Stop` promptly acknowledges its single accepted completion request, then the daemon
+finalizes, transcribes, and delivers asynchronously exactly once. `Cancel` closes
+that session while retaining the durable artifact and without requesting
+transcription or delivery. `Toggle` starts an idle slot or requests graceful
+completion; it never lowers to discard. `Status` reports the current lifecycle
+phase without transcript text. The first output target is `SystemClipboard`.
+
+`AcquireMaintenance` is a connection-bound, FIFO maintenance lease request. The
+daemon waits event-driven for idle, gates new starts when the request is queue
+front, then grants the epoch-scoped lease to that same live connection.
+`ReleaseMaintenance` releases it explicitly; connection EOF and daemon restart
+release or invalidate it automatically. No updater command travels in this
+contract.
 
 ## Owned
 

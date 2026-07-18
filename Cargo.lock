@@ -605,7 +605,7 @@ dependencies = [
 
 [[package]]
 name = "signal-listener"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "nota 0.9.0",
  "rkyv",

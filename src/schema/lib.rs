@@ -221,6 +221,22 @@ pub struct ToggleCapture {}
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct AcquireMaintenanceLease {}
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct ReleaseMaintenanceLease {}
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct StartedSession(CaptureSession);
 
 #[rustfmt::skip]
@@ -275,6 +291,10 @@ pub struct ActiveCapture {
 pub enum CaptureStatus {
     Idle,
     Capturing(ActiveCapture),
+    Finalizing(ActiveCapture),
+    Transcribing(ActiveCapture),
+    Delivered(CaptureSession),
+    Error(CaptureSession),
 }
 
 #[rustfmt::skip]
@@ -546,6 +566,121 @@ pub struct CaptureCancellationRequested {
     feature = "nota-text",
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct CompletionRequestedSession(CaptureSession);
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct CaptureCompletionRequested {
+    pub completion_requested_session: CompletionRequestedSession,
+    pub durable_audio_artifact: DurableAudioArtifact,
+}
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct DaemonEpoch(Integer);
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct MaintenanceLeaseEpoch(DaemonEpoch);
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct MaintenanceLeaseGrant(MaintenanceLeaseEpoch);
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct MaintenanceLeaseGranted(MaintenanceLeaseGrant);
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct MaintenanceLeaseRelease {}
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct MaintenanceLeaseReleased(MaintenanceLeaseRelease);
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct MaintenanceLeaseActiveState(MaintenanceLeaseEpoch);
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct MaintenanceLeaseActive(MaintenanceLeaseActiveState);
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct MaintenanceLeaseAbsent {}
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct MaintenanceLeaseNotHeld(MaintenanceLeaseAbsent);
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct MaintenanceLeaseCancellation {}
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct MaintenanceLeaseCancelled(MaintenanceLeaseCancellation);
+
+#[rustfmt::skip]
+#[cfg_attr(
+    feature = "nota-text",
+    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
+)]
 #[derive(
     rkyv::Archive,
     rkyv::Serialize,
@@ -564,6 +699,8 @@ pub enum OperationKind {
     ListCaptures,
     Retry,
     Toggle,
+    AcquireMaintenance,
+    ReleaseMaintenance,
 }
 
 #[rustfmt::skip]
@@ -630,6 +767,8 @@ pub enum Input {
     ListCaptures(ListCapturesRequest),
     Retry(RetryCapture),
     Toggle(ToggleCapture),
+    AcquireMaintenance(AcquireMaintenanceLease),
+    ReleaseMaintenance(ReleaseMaintenanceLease),
 }
 
 #[rustfmt::skip]
@@ -650,6 +789,12 @@ pub enum Output {
     NoActive(NoActiveCapture),
     SessionMismatch(CaptureSessionMismatch),
     Unimplemented(RequestUnimplemented),
+    CompletionRequested(CaptureCompletionRequested),
+    MaintenanceLeaseGranted(MaintenanceLeaseGrant),
+    MaintenanceLeaseReleased(MaintenanceLeaseRelease),
+    MaintenanceLeaseActive(MaintenanceLeaseActiveState),
+    MaintenanceLeaseNotHeld(MaintenanceLeaseAbsent),
+    MaintenanceLeaseCancelled(MaintenanceLeaseCancellation),
 }
 
 #[rustfmt::skip]
@@ -1261,6 +1406,196 @@ impl From<CaptureSession> for CancellationRequestedSession {
 }
 
 #[rustfmt::skip]
+impl CompletionRequestedSession {
+    pub fn new(payload: CaptureSession) -> Self {
+        Self(payload)
+    }
+    pub fn payload(&self) -> &CaptureSession {
+        &self.0
+    }
+    pub fn into_payload(self) -> CaptureSession {
+        self.0
+    }
+}
+#[rustfmt::skip]
+impl From<CaptureSession> for CompletionRequestedSession {
+    fn from(payload: CaptureSession) -> Self {
+        Self::new(payload)
+    }
+}
+
+#[rustfmt::skip]
+impl DaemonEpoch {
+    pub fn new(payload: Integer) -> Self {
+        Self(payload)
+    }
+    pub fn payload(&self) -> &Integer {
+        &self.0
+    }
+    pub fn into_payload(self) -> Integer {
+        self.0
+    }
+}
+#[rustfmt::skip]
+impl From<Integer> for DaemonEpoch {
+    fn from(payload: Integer) -> Self {
+        Self::new(payload)
+    }
+}
+
+#[rustfmt::skip]
+impl MaintenanceLeaseEpoch {
+    pub fn new(payload: DaemonEpoch) -> Self {
+        Self(payload)
+    }
+    pub fn payload(&self) -> &DaemonEpoch {
+        &self.0
+    }
+    pub fn into_payload(self) -> DaemonEpoch {
+        self.0
+    }
+}
+#[rustfmt::skip]
+impl From<DaemonEpoch> for MaintenanceLeaseEpoch {
+    fn from(payload: DaemonEpoch) -> Self {
+        Self::new(payload)
+    }
+}
+
+#[rustfmt::skip]
+impl MaintenanceLeaseGrant {
+    pub fn new(payload: MaintenanceLeaseEpoch) -> Self {
+        Self(payload)
+    }
+    pub fn payload(&self) -> &MaintenanceLeaseEpoch {
+        &self.0
+    }
+    pub fn into_payload(self) -> MaintenanceLeaseEpoch {
+        self.0
+    }
+}
+#[rustfmt::skip]
+impl From<MaintenanceLeaseEpoch> for MaintenanceLeaseGrant {
+    fn from(payload: MaintenanceLeaseEpoch) -> Self {
+        Self::new(payload)
+    }
+}
+
+#[rustfmt::skip]
+impl MaintenanceLeaseGranted {
+    pub fn new(payload: MaintenanceLeaseGrant) -> Self {
+        Self(payload)
+    }
+    pub fn payload(&self) -> &MaintenanceLeaseGrant {
+        &self.0
+    }
+    pub fn into_payload(self) -> MaintenanceLeaseGrant {
+        self.0
+    }
+}
+#[rustfmt::skip]
+impl From<MaintenanceLeaseGrant> for MaintenanceLeaseGranted {
+    fn from(payload: MaintenanceLeaseGrant) -> Self {
+        Self::new(payload)
+    }
+}
+
+#[rustfmt::skip]
+impl MaintenanceLeaseReleased {
+    pub fn new(payload: MaintenanceLeaseRelease) -> Self {
+        Self(payload)
+    }
+    pub fn payload(&self) -> &MaintenanceLeaseRelease {
+        &self.0
+    }
+    pub fn into_payload(self) -> MaintenanceLeaseRelease {
+        self.0
+    }
+}
+#[rustfmt::skip]
+impl From<MaintenanceLeaseRelease> for MaintenanceLeaseReleased {
+    fn from(payload: MaintenanceLeaseRelease) -> Self {
+        Self::new(payload)
+    }
+}
+
+#[rustfmt::skip]
+impl MaintenanceLeaseActiveState {
+    pub fn new(payload: MaintenanceLeaseEpoch) -> Self {
+        Self(payload)
+    }
+    pub fn payload(&self) -> &MaintenanceLeaseEpoch {
+        &self.0
+    }
+    pub fn into_payload(self) -> MaintenanceLeaseEpoch {
+        self.0
+    }
+}
+#[rustfmt::skip]
+impl From<MaintenanceLeaseEpoch> for MaintenanceLeaseActiveState {
+    fn from(payload: MaintenanceLeaseEpoch) -> Self {
+        Self::new(payload)
+    }
+}
+
+#[rustfmt::skip]
+impl MaintenanceLeaseActive {
+    pub fn new(payload: MaintenanceLeaseActiveState) -> Self {
+        Self(payload)
+    }
+    pub fn payload(&self) -> &MaintenanceLeaseActiveState {
+        &self.0
+    }
+    pub fn into_payload(self) -> MaintenanceLeaseActiveState {
+        self.0
+    }
+}
+#[rustfmt::skip]
+impl From<MaintenanceLeaseActiveState> for MaintenanceLeaseActive {
+    fn from(payload: MaintenanceLeaseActiveState) -> Self {
+        Self::new(payload)
+    }
+}
+
+#[rustfmt::skip]
+impl MaintenanceLeaseNotHeld {
+    pub fn new(payload: MaintenanceLeaseAbsent) -> Self {
+        Self(payload)
+    }
+    pub fn payload(&self) -> &MaintenanceLeaseAbsent {
+        &self.0
+    }
+    pub fn into_payload(self) -> MaintenanceLeaseAbsent {
+        self.0
+    }
+}
+#[rustfmt::skip]
+impl From<MaintenanceLeaseAbsent> for MaintenanceLeaseNotHeld {
+    fn from(payload: MaintenanceLeaseAbsent) -> Self {
+        Self::new(payload)
+    }
+}
+
+#[rustfmt::skip]
+impl MaintenanceLeaseCancelled {
+    pub fn new(payload: MaintenanceLeaseCancellation) -> Self {
+        Self(payload)
+    }
+    pub fn payload(&self) -> &MaintenanceLeaseCancellation {
+        &self.0
+    }
+    pub fn into_payload(self) -> MaintenanceLeaseCancellation {
+        self.0
+    }
+}
+#[rustfmt::skip]
+impl From<MaintenanceLeaseCancellation> for MaintenanceLeaseCancelled {
+    fn from(payload: MaintenanceLeaseCancellation) -> Self {
+        Self::new(payload)
+    }
+}
+
+#[rustfmt::skip]
 impl UnimplementedOperationKind {
     pub fn new(payload: OperationKind) -> Self {
         Self(payload)
@@ -1303,6 +1638,18 @@ impl CaptureStatus {
     pub fn capturing(payload: ActiveCapture) -> Self {
         Self::Capturing(payload)
     }
+    pub fn finalizing(payload: ActiveCapture) -> Self {
+        Self::Finalizing(payload)
+    }
+    pub fn transcribing(payload: ActiveCapture) -> Self {
+        Self::Transcribing(payload)
+    }
+    pub fn delivered(payload: Integer) -> Self {
+        Self::Delivered(CaptureSession::new(payload))
+    }
+    pub fn error(payload: Integer) -> Self {
+        Self::Error(CaptureSession::new(payload))
+    }
 }
 
 #[rustfmt::skip]
@@ -1337,6 +1684,12 @@ impl Input {
     }
     pub fn toggle(payload: ToggleCapture) -> Self {
         Self::Toggle(payload)
+    }
+    pub fn acquire_maintenance(payload: AcquireMaintenanceLease) -> Self {
+        Self::AcquireMaintenance(payload)
+    }
+    pub fn release_maintenance(payload: ReleaseMaintenanceLease) -> Self {
+        Self::ReleaseMaintenance(payload)
     }
 }
 
@@ -1375,12 +1728,23 @@ impl Output {
     pub fn unimplemented(payload: RequestUnimplemented) -> Self {
         Self::Unimplemented(payload)
     }
-}
-
-#[rustfmt::skip]
-impl From<ActiveCapture> for CaptureStatus {
-    fn from(payload: ActiveCapture) -> Self {
-        Self::Capturing(payload)
+    pub fn completion_requested(payload: CaptureCompletionRequested) -> Self {
+        Self::CompletionRequested(payload)
+    }
+    pub fn maintenance_lease_granted(payload: MaintenanceLeaseEpoch) -> Self {
+        Self::MaintenanceLeaseGranted(MaintenanceLeaseGrant::new(payload))
+    }
+    pub fn maintenance_lease_released(payload: MaintenanceLeaseRelease) -> Self {
+        Self::MaintenanceLeaseReleased(payload)
+    }
+    pub fn maintenance_lease_active(payload: MaintenanceLeaseEpoch) -> Self {
+        Self::MaintenanceLeaseActive(MaintenanceLeaseActiveState::new(payload))
+    }
+    pub fn maintenance_lease_not_held(payload: MaintenanceLeaseAbsent) -> Self {
+        Self::MaintenanceLeaseNotHeld(payload)
+    }
+    pub fn maintenance_lease_cancelled(payload: MaintenanceLeaseCancellation) -> Self {
+        Self::MaintenanceLeaseCancelled(payload)
     }
 }
 
@@ -1444,6 +1808,20 @@ impl From<RetryCapture> for Input {
 impl From<ToggleCapture> for Input {
     fn from(payload: ToggleCapture) -> Self {
         Self::Toggle(payload)
+    }
+}
+
+#[rustfmt::skip]
+impl From<AcquireMaintenanceLease> for Input {
+    fn from(payload: AcquireMaintenanceLease) -> Self {
+        Self::AcquireMaintenance(payload)
+    }
+}
+
+#[rustfmt::skip]
+impl From<ReleaseMaintenanceLease> for Input {
+    fn from(payload: ReleaseMaintenanceLease) -> Self {
+        Self::ReleaseMaintenance(payload)
     }
 }
 
@@ -1525,6 +1903,48 @@ impl From<RequestUnimplemented> for Output {
 }
 
 #[rustfmt::skip]
+impl From<CaptureCompletionRequested> for Output {
+    fn from(payload: CaptureCompletionRequested) -> Self {
+        Self::CompletionRequested(payload)
+    }
+}
+
+#[rustfmt::skip]
+impl From<MaintenanceLeaseGrant> for Output {
+    fn from(payload: MaintenanceLeaseGrant) -> Self {
+        Self::MaintenanceLeaseGranted(payload)
+    }
+}
+
+#[rustfmt::skip]
+impl From<MaintenanceLeaseRelease> for Output {
+    fn from(payload: MaintenanceLeaseRelease) -> Self {
+        Self::MaintenanceLeaseReleased(payload)
+    }
+}
+
+#[rustfmt::skip]
+impl From<MaintenanceLeaseActiveState> for Output {
+    fn from(payload: MaintenanceLeaseActiveState) -> Self {
+        Self::MaintenanceLeaseActive(payload)
+    }
+}
+
+#[rustfmt::skip]
+impl From<MaintenanceLeaseAbsent> for Output {
+    fn from(payload: MaintenanceLeaseAbsent) -> Self {
+        Self::MaintenanceLeaseNotHeld(payload)
+    }
+}
+
+#[rustfmt::skip]
+impl From<MaintenanceLeaseCancellation> for Output {
+    fn from(payload: MaintenanceLeaseCancellation) -> Self {
+        Self::MaintenanceLeaseCancelled(payload)
+    }
+}
+
+#[rustfmt::skip]
 #[cfg(feature = "nota-text")]
 impl std::str::FromStr for Input {
     type Err = NotaDecodeError;
@@ -1565,6 +1985,8 @@ pub mod short_header {
     pub const INPUT_LIST_CAPTURES: u64 = 0x0004000000000000;
     pub const INPUT_RETRY: u64 = 0x0005000000000000;
     pub const INPUT_TOGGLE: u64 = 0x0006000000000000;
+    pub const INPUT_ACQUIRE_MAINTENANCE: u64 = 0x0007000000000000;
+    pub const INPUT_RELEASE_MAINTENANCE: u64 = 0x0008000000000000;
     pub const OUTPUT_STARTED: u64 = 0x0100000000000000;
     pub const OUTPUT_STOPPED: u64 = 0x0101000000000000;
     pub const OUTPUT_CANCELLED: u64 = 0x0102000000000000;
@@ -1576,6 +1998,12 @@ pub mod short_header {
     pub const OUTPUT_NO_ACTIVE: u64 = 0x0108000000000000;
     pub const OUTPUT_SESSION_MISMATCH: u64 = 0x0109000000000000;
     pub const OUTPUT_UNIMPLEMENTED: u64 = 0x010A000000000000;
+    pub const OUTPUT_COMPLETION_REQUESTED: u64 = 0x010B000000000000;
+    pub const OUTPUT_MAINTENANCE_LEASE_GRANTED: u64 = 0x010C000000000000;
+    pub const OUTPUT_MAINTENANCE_LEASE_RELEASED: u64 = 0x010D000000000000;
+    pub const OUTPUT_MAINTENANCE_LEASE_ACTIVE: u64 = 0x010E000000000000;
+    pub const OUTPUT_MAINTENANCE_LEASE_NOT_HELD: u64 = 0x010F000000000000;
+    pub const OUTPUT_MAINTENANCE_LEASE_CANCELLED: u64 = 0x0110000000000000;
 }
 
 #[rustfmt::skip]
@@ -1636,6 +2064,8 @@ pub enum InputRoute {
     ListCaptures,
     Retry,
     Toggle,
+    AcquireMaintenance,
+    ReleaseMaintenance,
 }
 
 #[rustfmt::skip]
@@ -1665,6 +2095,12 @@ pub enum OutputRoute {
     NoActive,
     SessionMismatch,
     Unimplemented,
+    CompletionRequested,
+    MaintenanceLeaseGranted,
+    MaintenanceLeaseReleased,
+    MaintenanceLeaseActive,
+    MaintenanceLeaseNotHeld,
+    MaintenanceLeaseCancelled,
 }
 
 #[rustfmt::skip]
@@ -1678,6 +2114,8 @@ impl Input {
             Self::ListCaptures(_) => InputRoute::ListCaptures,
             Self::Retry(_) => InputRoute::Retry,
             Self::Toggle(_) => InputRoute::Toggle,
+            Self::AcquireMaintenance(_) => InputRoute::AcquireMaintenance,
+            Self::ReleaseMaintenance(_) => InputRoute::ReleaseMaintenance,
         }
     }
     pub fn short_header(&self) -> u64 {
@@ -1689,6 +2127,8 @@ impl Input {
             Self::ListCaptures(_) => short_header::INPUT_LIST_CAPTURES,
             Self::Retry(_) => short_header::INPUT_RETRY,
             Self::Toggle(_) => short_header::INPUT_TOGGLE,
+            Self::AcquireMaintenance(_) => short_header::INPUT_ACQUIRE_MAINTENANCE,
+            Self::ReleaseMaintenance(_) => short_header::INPUT_RELEASE_MAINTENANCE,
         }
     }
     pub fn route_from_short_header(header: u64) -> Result<InputRoute, SignalFrameError> {
@@ -1700,6 +2140,8 @@ impl Input {
             short_header::INPUT_LIST_CAPTURES => Ok(InputRoute::ListCaptures),
             short_header::INPUT_RETRY => Ok(InputRoute::Retry),
             short_header::INPUT_TOGGLE => Ok(InputRoute::Toggle),
+            short_header::INPUT_ACQUIRE_MAINTENANCE => Ok(InputRoute::AcquireMaintenance),
+            short_header::INPUT_RELEASE_MAINTENANCE => Ok(InputRoute::ReleaseMaintenance),
             _ => {
                 Err(SignalFrameError::UnknownHeader {
                     root_enum: "Input",
@@ -1761,6 +2203,12 @@ impl Output {
             Self::NoActive(_) => OutputRoute::NoActive,
             Self::SessionMismatch(_) => OutputRoute::SessionMismatch,
             Self::Unimplemented(_) => OutputRoute::Unimplemented,
+            Self::CompletionRequested(_) => OutputRoute::CompletionRequested,
+            Self::MaintenanceLeaseGranted(_) => OutputRoute::MaintenanceLeaseGranted,
+            Self::MaintenanceLeaseReleased(_) => OutputRoute::MaintenanceLeaseReleased,
+            Self::MaintenanceLeaseActive(_) => OutputRoute::MaintenanceLeaseActive,
+            Self::MaintenanceLeaseNotHeld(_) => OutputRoute::MaintenanceLeaseNotHeld,
+            Self::MaintenanceLeaseCancelled(_) => OutputRoute::MaintenanceLeaseCancelled,
         }
     }
     pub fn short_header(&self) -> u64 {
@@ -1776,6 +2224,22 @@ impl Output {
             Self::NoActive(_) => short_header::OUTPUT_NO_ACTIVE,
             Self::SessionMismatch(_) => short_header::OUTPUT_SESSION_MISMATCH,
             Self::Unimplemented(_) => short_header::OUTPUT_UNIMPLEMENTED,
+            Self::CompletionRequested(_) => short_header::OUTPUT_COMPLETION_REQUESTED,
+            Self::MaintenanceLeaseGranted(_) => {
+                short_header::OUTPUT_MAINTENANCE_LEASE_GRANTED
+            }
+            Self::MaintenanceLeaseReleased(_) => {
+                short_header::OUTPUT_MAINTENANCE_LEASE_RELEASED
+            }
+            Self::MaintenanceLeaseActive(_) => {
+                short_header::OUTPUT_MAINTENANCE_LEASE_ACTIVE
+            }
+            Self::MaintenanceLeaseNotHeld(_) => {
+                short_header::OUTPUT_MAINTENANCE_LEASE_NOT_HELD
+            }
+            Self::MaintenanceLeaseCancelled(_) => {
+                short_header::OUTPUT_MAINTENANCE_LEASE_CANCELLED
+            }
         }
     }
     pub fn route_from_short_header(
@@ -1795,6 +2259,24 @@ impl Output {
             short_header::OUTPUT_NO_ACTIVE => Ok(OutputRoute::NoActive),
             short_header::OUTPUT_SESSION_MISMATCH => Ok(OutputRoute::SessionMismatch),
             short_header::OUTPUT_UNIMPLEMENTED => Ok(OutputRoute::Unimplemented),
+            short_header::OUTPUT_COMPLETION_REQUESTED => {
+                Ok(OutputRoute::CompletionRequested)
+            }
+            short_header::OUTPUT_MAINTENANCE_LEASE_GRANTED => {
+                Ok(OutputRoute::MaintenanceLeaseGranted)
+            }
+            short_header::OUTPUT_MAINTENANCE_LEASE_RELEASED => {
+                Ok(OutputRoute::MaintenanceLeaseReleased)
+            }
+            short_header::OUTPUT_MAINTENANCE_LEASE_ACTIVE => {
+                Ok(OutputRoute::MaintenanceLeaseActive)
+            }
+            short_header::OUTPUT_MAINTENANCE_LEASE_NOT_HELD => {
+                Ok(OutputRoute::MaintenanceLeaseNotHeld)
+            }
+            short_header::OUTPUT_MAINTENANCE_LEASE_CANCELLED => {
+                Ok(OutputRoute::MaintenanceLeaseCancelled)
+            }
             _ => {
                 Err(SignalFrameError::UnknownHeader {
                     root_enum: "Output",
@@ -1853,6 +2335,8 @@ impl signal_frame::SignalOperationHeads for Input {
         "ListCaptures",
         "Retry",
         "Toggle",
+        "AcquireMaintenance",
+        "ReleaseMaintenance",
     ];
 }
 #[rustfmt::skip]

@@ -73,6 +73,8 @@ impl Input {
             Self::ListCaptures(_) => OperationKind::ListCaptures,
             Self::Retry(_) => OperationKind::Retry,
             Self::Toggle(_) => OperationKind::Toggle,
+            Self::AcquireMaintenance(_) => OperationKind::AcquireMaintenance,
+            Self::ReleaseMaintenance(_) => OperationKind::ReleaseMaintenance,
         }
     }
 }

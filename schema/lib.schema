@@ -1,7 +1,7 @@
 ;; signal-listener — ordinary working wire contract for Listener.
 {}
-[Start.StartCapture Stop.StopCapture Cancel.CancelCapture Status.StatusRequest ListCaptures.ListCapturesRequest Retry.RetryCapture Toggle.ToggleCapture]
-[Started.CaptureStarted Stopped.CaptureStopped Cancelled.CaptureCancelled CancellationRequested.CaptureCancellationRequested StatusReported.CaptureStatusReport CapturesListed.CaptureListReport Retried.CaptureRetried AlreadyActive.CaptureAlreadyActive NoActive.NoActiveCapture SessionMismatch.CaptureSessionMismatch Unimplemented.RequestUnimplemented]
+[Start.StartCapture Stop.StopCapture Cancel.CancelCapture Status.StatusRequest ListCaptures.ListCapturesRequest Retry.RetryCapture Toggle.ToggleCapture AcquireMaintenance.AcquireMaintenanceLease ReleaseMaintenance.ReleaseMaintenanceLease]
+[Started.CaptureStarted Stopped.CaptureStopped Cancelled.CaptureCancelled CancellationRequested.CaptureCancellationRequested StatusReported.CaptureStatusReport CapturesListed.CaptureListReport Retried.CaptureRetried AlreadyActive.CaptureAlreadyActive NoActive.NoActiveCapture SessionMismatch.CaptureSessionMismatch Unimplemented.RequestUnimplemented CompletionRequested.CaptureCompletionRequested MaintenanceLeaseGranted.MaintenanceLeaseGrant MaintenanceLeaseReleased.MaintenanceLeaseRelease MaintenanceLeaseActive.MaintenanceLeaseActiveState MaintenanceLeaseNotHeld.MaintenanceLeaseAbsent MaintenanceLeaseCancelled.MaintenanceLeaseCancellation]
 {
   CaptureSession.Integer
   WirePath.String
@@ -26,6 +26,8 @@
   ListCapturesRequest.{}
   RetryCapture.CaptureSession
   ToggleCapture.{}
+  AcquireMaintenanceLease.{}
+  ReleaseMaintenanceLease.{}
 
   StartedSession.CaptureSession
   CaptureStarted.StartedSession
@@ -35,7 +37,7 @@
 
   ActiveCaptureSession.CaptureSession
   ActiveCapture.{ ActiveCaptureSession DurableAudioArtifact }
-  CaptureStatus.[Idle Capturing.ActiveCapture]
+  CaptureStatus.[Idle Capturing.ActiveCapture Finalizing.ActiveCapture Transcribing.ActiveCapture Delivered.CaptureSession Error.CaptureSession]
   CaptureStatusReport.CaptureStatus
 
   CaptureArtifactState.[Recovering Retryable Completed Failed]
@@ -68,7 +70,23 @@
   CancellationRequestedSession.CaptureSession
   CaptureCancellationRequested.{ CancellationRequestedSession DurableAudioArtifact }
 
-  OperationKind.[Start Stop Cancel Status ListCaptures Retry Toggle]
+  CompletionRequestedSession.CaptureSession
+  CaptureCompletionRequested.{ CompletionRequestedSession DurableAudioArtifact }
+
+  DaemonEpoch.Integer
+  MaintenanceLeaseEpoch.DaemonEpoch
+  MaintenanceLeaseGrant.MaintenanceLeaseEpoch
+  MaintenanceLeaseGranted.MaintenanceLeaseGrant
+  MaintenanceLeaseRelease.{}
+  MaintenanceLeaseReleased.MaintenanceLeaseRelease
+  MaintenanceLeaseActiveState.MaintenanceLeaseEpoch
+  MaintenanceLeaseActive.MaintenanceLeaseActiveState
+  MaintenanceLeaseAbsent.{}
+  MaintenanceLeaseNotHeld.MaintenanceLeaseAbsent
+  MaintenanceLeaseCancellation.{}
+  MaintenanceLeaseCancelled.MaintenanceLeaseCancellation
+
+  OperationKind.[Start Stop Cancel Status ListCaptures Retry Toggle AcquireMaintenance ReleaseMaintenance]
   UnimplementedReason.[NotBuiltYet AudioBackendUnavailable TranscriptionBackendUnavailable OutputTargetUnavailable StoreUnavailable]
   UnimplementedOperationKind.OperationKind
   Reason.UnimplementedReason

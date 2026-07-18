@@ -6,11 +6,14 @@ use signal_frame::{
     SubReply,
 };
 use signal_listener::{
-    ActiveCapture, ActiveCaptureSession, AudioArtifactPath, CancellationRequestedSession,
-    CancelledSession, CaptureAlreadyActive, CaptureCancellationRequested, CaptureCancelled,
-    CaptureSession, CaptureSessionMismatch, CaptureStarted, CaptureStatus, CaptureStopped,
-    DeliveredTo, DeliveryOutcome, DeliveryOutcomes, DurableAudioArtifact, Frame, FrameBody, Input,
-    ListCapturesRequest, NoActiveCapture, OperationKind, Output, OutputTarget, Reason,
+    AcquireMaintenanceLease, ActiveCapture, ActiveCaptureSession, AudioArtifactPath,
+    CancellationRequestedSession, CancelledSession, CaptureAlreadyActive,
+    CaptureCancellationRequested, CaptureCancelled, CaptureCompletionRequested, CaptureSession,
+    CaptureSessionMismatch, CaptureStarted, CaptureStatus, CaptureStopped,
+    CompletionRequestedSession, DaemonEpoch, DeliveredTo, DeliveryOutcome, DeliveryOutcomes,
+    DurableAudioArtifact, Frame, FrameBody, Input, ListCapturesRequest, MaintenanceLeaseAbsent,
+    MaintenanceLeaseCancellation, MaintenanceLeaseEpoch, MaintenanceLeaseRelease,
+    NoActiveCapture, OperationKind, Output, OutputTarget, Reason, ReleaseMaintenanceLease,
     RequestUnimplemented, RequestedCaptureSession, RetryCapture, StartCapture, StartedSession,
     StatusRequest, StopCapture, StoppedSession, ToggleCapture, TranscriptText,
     UnimplementedOperationKind, UnimplementedReason, WirePath,
@@ -117,6 +120,16 @@ fn start_stop_and_status_requests_round_trip() {
     assert_eq!(toggle.operation_kind(), OperationKind::Toggle);
     ListenerFixture::assert_request_round_trips(toggle.clone());
     ListenerFixture::assert_nota_round_trips(&toggle);
+
+    let acquire = Input::AcquireMaintenance(AcquireMaintenanceLease {});
+    assert_eq!(acquire.operation_kind(), OperationKind::AcquireMaintenance);
+    ListenerFixture::assert_request_round_trips(acquire.clone());
+    ListenerFixture::assert_nota_round_trips(&acquire);
+
+    let release = Input::ReleaseMaintenance(ReleaseMaintenanceLease {});
+    assert_eq!(release.operation_kind(), OperationKind::ReleaseMaintenance);
+    ListenerFixture::assert_request_round_trips(release.clone());
+    ListenerFixture::assert_nota_round_trips(&release);
 }
 
 #[test]
@@ -125,6 +138,14 @@ fn canonical_capture_control_nota_forms_round_trip() {
         (Input::Toggle(ToggleCapture {}), "Toggle.{}"),
         (Input::cancel(CaptureSession::new(7)), "Cancel.7"),
         (Input::stop(CaptureSession::new(7)), "Stop.7"),
+        (
+            Input::AcquireMaintenance(AcquireMaintenanceLease {}),
+            "AcquireMaintenance.{}",
+        ),
+        (
+            Input::ReleaseMaintenance(ReleaseMaintenanceLease {}),
+            "ReleaseMaintenance.{}",
+        ),
     ];
 
     for (request, canonical_notation) in requests {
@@ -161,6 +182,25 @@ fn reply_variants_round_trip() {
             active_capture_session: ActiveCaptureSession::new(CaptureSession::new(7)),
             durable_audio_artifact: ListenerFixture::audio_artifact(),
         })),
+        Output::status_reported(CaptureStatus::Finalizing(ActiveCapture {
+            active_capture_session: ActiveCaptureSession::new(CaptureSession::new(7)),
+            durable_audio_artifact: ListenerFixture::audio_artifact(),
+        })),
+        Output::status_reported(CaptureStatus::Transcribing(ActiveCapture {
+            active_capture_session: ActiveCaptureSession::new(CaptureSession::new(7)),
+            durable_audio_artifact: ListenerFixture::audio_artifact(),
+        })),
+        Output::status_reported(CaptureStatus::Delivered(CaptureSession::new(7))),
+        Output::status_reported(CaptureStatus::Error(CaptureSession::new(7))),
+        Output::CompletionRequested(CaptureCompletionRequested {
+            completion_requested_session: CompletionRequestedSession::new(CaptureSession::new(7)),
+            durable_audio_artifact: ListenerFixture::audio_artifact(),
+        }),
+        Output::maintenance_lease_granted(MaintenanceLeaseEpoch::new(DaemonEpoch::new(42))),
+        Output::maintenance_lease_released(MaintenanceLeaseRelease {}),
+        Output::maintenance_lease_active(MaintenanceLeaseEpoch::new(DaemonEpoch::new(42))),
+        Output::maintenance_lease_not_held(MaintenanceLeaseAbsent {}),
+        Output::maintenance_lease_cancelled(MaintenanceLeaseCancellation {}),
         Output::AlreadyActive(CaptureAlreadyActive::new(ActiveCaptureSession::new(
             CaptureSession::new(7),
         ))),
