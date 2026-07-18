@@ -6,13 +6,13 @@ use signal_frame::{
     SubReply,
 };
 use signal_listener::{
-    ActiveCapture, ActiveCaptureSession, AudioArtifactPath, CancelledSession,
-    CancellationRequestedSession, CaptureAlreadyActive, CaptureCancellationRequested,
-    CaptureCancelled, CaptureSession, CaptureSessionMismatch, CaptureStarted, CaptureStatus,
-    CaptureStopped, DeliveredTo, DeliveryOutcome, DeliveryOutcomes, DurableAudioArtifact, Frame,
-    FrameBody, Input, ListCapturesRequest, NoActiveCapture, OperationKind, Output, OutputTarget,
-    Reason, RequestUnimplemented, RequestedCaptureSession, RetryCapture, StartCapture,
-    StartedSession, StatusRequest, StopCapture, StoppedSession, ToggleCapture, TranscriptText,
+    ActiveCapture, ActiveCaptureSession, AudioArtifactPath, CancellationRequestedSession,
+    CancelledSession, CaptureAlreadyActive, CaptureCancellationRequested, CaptureCancelled,
+    CaptureSession, CaptureSessionMismatch, CaptureStarted, CaptureStatus, CaptureStopped,
+    DeliveredTo, DeliveryOutcome, DeliveryOutcomes, DurableAudioArtifact, Frame, FrameBody, Input,
+    ListCapturesRequest, NoActiveCapture, OperationKind, Output, OutputTarget, Reason,
+    RequestUnimplemented, RequestedCaptureSession, RetryCapture, StartCapture, StartedSession,
+    StatusRequest, StopCapture, StoppedSession, ToggleCapture, TranscriptText,
     UnimplementedOperationKind, UnimplementedReason, WirePath,
 };
 
@@ -120,6 +120,20 @@ fn start_stop_and_status_requests_round_trip() {
 }
 
 #[test]
+fn canonical_capture_control_nota_forms_round_trip() {
+    let requests = [
+        (Input::Toggle(ToggleCapture {}), "Toggle.{}"),
+        (Input::cancel(CaptureSession::new(7)), "Cancel.7"),
+        (Input::stop(CaptureSession::new(7)), "Stop.7"),
+    ];
+
+    for (request, canonical_notation) in requests {
+        assert_eq!(request.to_nota(), canonical_notation);
+        ListenerFixture::assert_nota_round_trips(&request);
+    }
+}
+
+#[test]
 fn reply_variants_round_trip() {
     let replies = [
         Output::Started(CaptureStarted::new(StartedSession::new(
@@ -138,7 +152,9 @@ fn reply_variants_round_trip() {
             durable_audio_artifact: ListenerFixture::audio_artifact(),
         }),
         Output::CancellationRequested(CaptureCancellationRequested {
-            cancellation_requested_session: CancellationRequestedSession::new(CaptureSession::new(7)),
+            cancellation_requested_session: CancellationRequestedSession::new(CaptureSession::new(
+                7,
+            )),
             durable_audio_artifact: ListenerFixture::audio_artifact(),
         }),
         Output::status_reported(CaptureStatus::Capturing(ActiveCapture {
