@@ -30,7 +30,7 @@ signal-frame = { git = "https://github.com/LiGoldragon/signal-frame.git", rev = 
 thiserror    = "2"
 
 [build-dependencies]
-schema-rust = { git = "https://github.com/LiGoldragon/schema-rust.git", rev = "3121201736089128ae8332004df0340c55026de2" }
+schema-rust = { git = "https://github.com/LiGoldragon/schema-rust.git", rev = "5c743ee5cab80db66fa1f21708792983aa73929f" }
 
 [lints.rust]
 unsafe_code = "forbid"
