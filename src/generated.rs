@@ -7,6 +7,13 @@
 #[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
+pub enum JobChange {
+    JobState(listener_library::JobState),
+    Forgotten(listener_library::JobId),
+}
+#[rustfmt::skip]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "datom", derive(datom_codec::Datomizable, datom_codec::Composing))]
 pub enum Toggling {
     Began(listener_library::JobId),
     Ended(listener_library::JobId),
@@ -59,24 +66,14 @@ pub enum Output {
     Retranscribing(listener_library::JobId),
     JobsListed(std::vec::Vec<listener_library::JobState>),
     HistoryListed(std::vec::Vec<listener_library::Past>),
-    Subscribed(
-        signal::Frame<
-            std::vec::Vec<listener_library::JobState>,
-            listener_library::JobState,
-        >,
-    ),
+    Subscribed(signal::Frame<std::vec::Vec<listener_library::JobState>, JobChange>),
     Refused(Refused_Data),
 }
 #[rustfmt::skip]
 #[allow(clippy::large_enum_variant)]
 pub enum Answer {
     Once(Output),
-    Subscribed(
-        signal::Stream<
-            std::vec::Vec<listener_library::JobState>,
-            listener_library::JobState,
-        >,
-    ),
+    Subscribed(signal::Stream<std::vec::Vec<listener_library::JobState>, JobChange>),
 }
 #[rustfmt::skip]
 #[allow(clippy::result_large_err, clippy::ptr_arg, clippy::borrowed_box)]
@@ -105,10 +102,7 @@ pub trait Answering {
     fn subscribe(
         &self,
     ) -> std::result::Result<
-        signal::Stream<
-            std::vec::Vec<listener_library::JobState>,
-            listener_library::JobState,
-        >,
+        signal::Stream<std::vec::Vec<listener_library::JobState>, JobChange>,
         Output,
     >;
 }
