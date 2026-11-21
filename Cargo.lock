@@ -95,20 +95,6 @@ dependencies = [
 
 [[package]]
 name = "ethos-zero"
-version = "30.0.0"
-source = "git+https://github.com/LiGoldragon/ethos-zero?rev=b97d952#b97d9526909a1ecebf61339f5723eaca53de5dca"
-dependencies = [
- "datom-codec",
- "prettyplease",
- "proc-macro2",
- "protos",
- "quote",
- "rkyv",
- "syn 3.0.5",
-]
-
-[[package]]
-name = "ethos-zero"
 version = "30.0.1"
 source = "git+https://github.com/LiGoldragon/ethos-zero?rev=2999292dc67c8608e54d32c333c550b29153cbff#2999292dc67c8608e54d32c333c550b29153cbff"
 dependencies = [
@@ -219,7 +205,7 @@ checksum = "3eaf3ede3fee6db1a4c2ee091bf8a8b4dccdc6d17f656fb07896ee72867612f2"
 [[package]]
 name = "listener-library"
 version = "0.1.0"
-source = "git+https://github.com/LiGoldragon/listener-library?rev=3549987a7fa5eaab826f21521d5d6a3a23a7d8d7#3549987a7fa5eaab826f21521d5d6a3a23a7d8d7"
+source = "git+https://github.com/LiGoldragon/listener-library?rev=d0f571a18e0aa5fb8ecd6454fc5bf813a52edf96#d0f571a18e0aa5fb8ecd6454fc5bf813a52edf96"
 dependencies = [
  "datom-codec",
  "ethos-zero 30.0.1",
@@ -280,10 +266,10 @@ dependencies = [
 [[package]]
 name = "nexus"
 version = "0.9.0"
-source = "git+https://github.com/LiGoldragon/nexus?rev=ea4db5a51083f114c624fc23c023c7a255376846#ea4db5a51083f114c624fc23c023c7a255376846"
+source = "git+https://github.com/LiGoldragon/nexus?rev=681a99ba307acd9cce6d5c120846072f1cedd814#681a99ba307acd9cce6d5c120846072f1cedd814"
 dependencies = [
  "datom-codec",
- "ethos-zero 30.0.0",
+ "ethos-zero 30.0.1",
  "futures-util",
  "protos",
  "rkyv",
@@ -577,7 +563,7 @@ dependencies = [
 [[package]]
 name = "translator"
 version = "0.2.0"
-source = "git+https://github.com/LiGoldragon/translator?rev=8d26df34e13291f34fcda85513c86e6f7c271405#8d26df34e13291f34fcda85513c86e6f7c271405"
+source = "git+https://github.com/LiGoldragon/translator?rev=77ecf05ff43d2063cf4336287dd4bf281ca2e69f#77ecf05ff43d2063cf4336287dd4bf281ca2e69f"
 dependencies = [
  "datom-codec",
  "protos",

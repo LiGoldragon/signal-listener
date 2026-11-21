@@ -368,58 +368,6 @@ rec {
         };
         resolvedDefaultFeatures = [ "datom" "default" ];
       };
-      "ethos-zero 30.0.0" = rec {
-        crateName = "ethos-zero";
-        version = "30.0.0";
-        edition = "2024";
-        crateBin = [];
-        workspace_member = null;
-        src = pkgs.fetchgit {
-          url = "https://github.com/LiGoldragon/ethos-zero";
-          rev = "b97d9526909a1ecebf61339f5723eaca53de5dca";
-          sha256 = "0ixkiwrwiyahwnljc9cd2464l2i5a7jknac6hfdig78chjmpcpmc";
-        };
-        libName = "ethos_zero";
-        dependencies = [
-          {
-            name = "datom-codec";
-            packageId = "datom-codec";
-            features = [ "rkyv" ];
-          }
-          {
-            name = "prettyplease";
-            packageId = "prettyplease";
-          }
-          {
-            name = "proc-macro2";
-            packageId = "proc-macro2";
-          }
-          {
-            name = "protos";
-            packageId = "protos";
-            features = [ "rkyv" ];
-          }
-          {
-            name = "quote";
-            packageId = "quote";
-          }
-          {
-            name = "rkyv";
-            packageId = "rkyv";
-            usesDefaultFeatures = false;
-            features = [ "std" "bytecheck" "little_endian" "pointer_width_32" "unaligned" ];
-          }
-          {
-            name = "syn";
-            packageId = "syn 3.0.5";
-            features = [ "full" ];
-          }
-        ];
-        features = {
-          "default" = [ "datom" ];
-        };
-        resolvedDefaultFeatures = [ "datom" "default" ];
-      };
       "ethos-zero 30.0.1" = rec {
         crateName = "ethos-zero";
         version = "30.0.1";
@@ -758,8 +706,8 @@ rec {
         workspace_member = null;
         src = pkgs.fetchgit {
           url = "https://github.com/LiGoldragon/listener-library";
-          rev = "3549987a7fa5eaab826f21521d5d6a3a23a7d8d7";
-          sha256 = "1zqnrk8sbmw13zr85h9i7q1pd18xwrwq9h4d6slrf7kbqq86afn8";
+          rev = "d0f571a18e0aa5fb8ecd6454fc5bf813a52edf96";
+          sha256 = "194n6gv4r9n5100v5l1jnifdm709r36bdaawdqk9hbifij8j2jrd";
         };
         libName = "listener_library";
         dependencies = [
@@ -960,8 +908,8 @@ rec {
         workspace_member = null;
         src = pkgs.fetchgit {
           url = "https://github.com/LiGoldragon/nexus";
-          rev = "ea4db5a51083f114c624fc23c023c7a255376846";
-          sha256 = "1dhb8qfhw47cyz23lvgmag7nwjjx0611m8rpm9d482ph4cpv3n2v";
+          rev = "681a99ba307acd9cce6d5c120846072f1cedd814";
+          sha256 = "00smri09ygifa939ywnkiykrsw8ssjy6gwkarb66fqmmq9jpxjqv";
         };
         dependencies = [
           {
@@ -1004,7 +952,7 @@ rec {
         buildDependencies = [
           {
             name = "ethos-zero";
-            packageId = "ethos-zero 30.0.0";
+            packageId = "ethos-zero 30.0.1";
           }
         ];
         devDependencies = [
@@ -1922,8 +1870,8 @@ rec {
         workspace_member = null;
         src = pkgs.fetchgit {
           url = "https://github.com/LiGoldragon/translator";
-          rev = "8d26df34e13291f34fcda85513c86e6f7c271405";
-          sha256 = "0laxq5i5sbap0mxik45dbmh47kcp38q1q8ipqpil7k6ipd18ybrs";
+          rev = "77ecf05ff43d2063cf4336287dd4bf281ca2e69f";
+          sha256 = "06agdjjw83cknfpw9vd7n4xbv0zk38jhk25ssag77lfiqhdmivmv";
         };
         dependencies = [
           {

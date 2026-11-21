@@ -40,8 +40,10 @@ pub enum Refused_Data {
     NothingRecording,
     NothingKept,
     NoBackend,
+    UnknownBackend(listener_library::UnknownBackend),
     NoSuchJob(NoSuchJob),
     NoAudio(NoAudio),
+    InProgress(listener_library::JobState),
     NoMicrophone,
     Unwritable,
 }
