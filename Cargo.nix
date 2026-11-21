@@ -706,8 +706,8 @@ rec {
         workspace_member = null;
         src = pkgs.fetchgit {
           url = "https://github.com/LiGoldragon/listener-library";
-          rev = "d0f571a18e0aa5fb8ecd6454fc5bf813a52edf96";
-          sha256 = "194n6gv4r9n5100v5l1jnifdm709r36bdaawdqk9hbifij8j2jrd";
+          rev = "5dbc60f59084a388bb0348d528b3da92bf53aedd";
+          sha256 = "164957bhyafzrjnz851f26ms5hxv7bgqqvvz55hzfvxwqdj51m7f";
         };
         libName = "listener_library";
         dependencies = [
@@ -1870,8 +1870,8 @@ rec {
         workspace_member = null;
         src = pkgs.fetchgit {
           url = "https://github.com/LiGoldragon/translator";
-          rev = "77ecf05ff43d2063cf4336287dd4bf281ca2e69f";
-          sha256 = "06agdjjw83cknfpw9vd7n4xbv0zk38jhk25ssag77lfiqhdmivmv";
+          rev = "cb4f6f4e5b3ef07f41d749e669dda58a6bcbf585";
+          sha256 = "16krsg14s13lqz9yj7h623fgap9zy2x8c58wl6kvr9vpkxzzp6pz";
         };
         dependencies = [
           {

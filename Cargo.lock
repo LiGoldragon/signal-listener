@@ -205,7 +205,7 @@ checksum = "3eaf3ede3fee6db1a4c2ee091bf8a8b4dccdc6d17f656fb07896ee72867612f2"
 [[package]]
 name = "listener-library"
 version = "0.1.0"
-source = "git+https://github.com/LiGoldragon/listener-library?rev=d0f571a18e0aa5fb8ecd6454fc5bf813a52edf96#d0f571a18e0aa5fb8ecd6454fc5bf813a52edf96"
+source = "git+https://github.com/LiGoldragon/listener-library?rev=5dbc60f59084a388bb0348d528b3da92bf53aedd#5dbc60f59084a388bb0348d528b3da92bf53aedd"
 dependencies = [
  "datom-codec",
  "ethos-zero 30.0.1",
@@ -563,7 +563,7 @@ dependencies = [
 [[package]]
 name = "translator"
 version = "0.2.0"
-source = "git+https://github.com/LiGoldragon/translator?rev=77ecf05ff43d2063cf4336287dd4bf281ca2e69f#77ecf05ff43d2063cf4336287dd4bf281ca2e69f"
+source = "git+https://github.com/LiGoldragon/translator?rev=cb4f6f4e5b3ef07f41d749e669dda58a6bcbf585#cb4f6f4e5b3ef07f41d749e669dda58a6bcbf585"
 dependencies = [
  "datom-codec",
  "protos",
