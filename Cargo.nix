@@ -706,8 +706,8 @@ rec {
         workspace_member = null;
         src = pkgs.fetchgit {
           url = "https://github.com/LiGoldragon/listener-library";
-          rev = "5dbc60f59084a388bb0348d528b3da92bf53aedd";
-          sha256 = "164957bhyafzrjnz851f26ms5hxv7bgqqvvz55hzfvxwqdj51m7f";
+          rev = "9233d4df04a95f0ddeadcea6133bc9593ff4b541";
+          sha256 = "0dzhm1fs4vyinv9zsalnv6rnn7d51y73dvq9x4iq0f8xjxbidgg6";
         };
         libName = "listener_library";
         dependencies = [

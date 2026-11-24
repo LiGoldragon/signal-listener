@@ -205,7 +205,7 @@ checksum = "3eaf3ede3fee6db1a4c2ee091bf8a8b4dccdc6d17f656fb07896ee72867612f2"
 [[package]]
 name = "listener-library"
 version = "0.1.0"
-source = "git+https://github.com/LiGoldragon/listener-library?rev=5dbc60f59084a388bb0348d528b3da92bf53aedd#5dbc60f59084a388bb0348d528b3da92bf53aedd"
+source = "git+https://github.com/LiGoldragon/listener-library?rev=9233d4df04a95f0ddeadcea6133bc9593ff4b541#9233d4df04a95f0ddeadcea6133bc9593ff4b541"
 dependencies = [
  "datom-codec",
  "ethos-zero 30.0.1",
